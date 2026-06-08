@@ -79,6 +79,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, currentVi
     setErrorMsg(null);
   }, [activeTab, profileTab, isOpen]);
 
+  // Lock body scroll when overlay modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleLoginSubmit = async (e: React.FormEvent) => {

@@ -74,16 +74,23 @@ export const CartDrawer: React.FC = () => {
   // Completed Order State
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
-  // Reset steps & inputs when drawer opens/closes
+  // Reset steps & inputs when drawer opens/closes, and lock body scroll
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = 'hidden';
       if (completedOrder) {
         setStep(4);
       } else {
         setStep(1);
       }
+    } else {
+      document.body.style.overflow = 'unset';
     }
-  }, [isOpen]);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, completedOrder]);
 
   // Prefill shipping details if customer is logged in
   useEffect(() => {
