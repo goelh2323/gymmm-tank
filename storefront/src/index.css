@@ -7571,7 +7571,7 @@ body {
   transform: none;
 }
 
-/* Mobile adjustments */
+/* Mobile adjustments and optimizations */
 @media (max-width: 768px) {
   .rich-section-title {
     font-size: 2rem;
@@ -7595,5 +7595,125 @@ body {
     width: 100%;
     text-align: center;
   }
+
+  /* 1. Header Navigation Optimization for Mobile/Tablet */
+  .store-header-v2 {
+    padding: 0.6rem 1rem !important;
+  }
+  .header-container-v2 {
+    flex-wrap: wrap !important;
+    gap: 0.6rem !important;
+  }
+  .header-left {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    margin-top: 0.3rem !important;
+  }
+  .header-search-v2 {
+    width: 100% !important;
+  }
+  .header-center {
+    order: 1 !important;
+    flex: 1 !important;
+    justify-content: flex-start !important;
+    gap: 0.5rem !important;
+  }
+  .header-right {
+    order: 2 !important;
+    flex: 0 0 auto !important;
+    gap: 0.6rem !important;
+  }
+
+  /* 2. Hero Video Showcase Container height adjustment */
+  .hero-video-container {
+    height: 340px !important;
+  }
+  
+  /* 7. Admin Dashboard Table scrolling */
+  .admin-table-wrapper {
+    overflow-x: auto !important;
+  }
 }
+
+@media (max-width: 480px) {
+  /* Header scale refinements */
+  .brand-logo-img-v2 {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .brand-text-v2 {
+    font-size: 1.35rem !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* Hero adjustments for smaller devices */
+  .hero-video-container {
+    height: 220px !important;
+  }
+  .hero-text-block {
+    padding: 1.5rem 0.8rem !important;
+  }
+  .hero-text-block .hero-title-interactive {
+    font-size: 2.1rem !important;
+    transform: scale(1.02) !important;
+  }
+  .hero-text-block .hero-subtitle {
+    font-size: 0.8rem !important;
+    letter-spacing: 0.8px !important;
+  }
+  .hero-actions-row {
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+    margin: 1.5rem 0 2rem 0 !important;
+    width: 100% !important;
+  }
+  .hero-btn-primary, .hero-btn-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.85rem 1.2rem !important;
+  }
+
+  /* Combos Cards fanned images overlapping constraints */
+  .combo-card {
+    padding: 1.2rem !important;
+  }
+  .combo-title {
+    font-size: 1.8rem !important;
+  }
+  .combo-image-hover-container {
+    height: 190px !important;
+  }
+  .combo-stack-img {
+    width: 130px !important;
+    height: 130px !important;
+  }
+  .combo-stack-layout img:nth-child(1) {
+    transform: translateX(-20px) rotate(-6deg) scale(0.9) !important;
+  }
+  .combo-stack-layout img:nth-child(2) {
+    transform: translateX(20px) rotate(6deg) scale(0.9) !important;
+  }
+  .combo-stack-layout img:nth-child(3) {
+    transform: translateX(35px) translateY(5px) rotate(10deg) scale(0.8) !important;
+  }
+
+  /* Panels padding */
+  .stack-builder-panel {
+    padding: 1.2rem !important;
+  }
+  .filter-controls-container {
+    padding: 0.8rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Credit Card shrink */
+  .credit-card-container-wrap {
+    transform: scale(0.85) !important;
+    margin-bottom: 0rem !important;
+    height: 160px !important;
+  }
+}
+
 
