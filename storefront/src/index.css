@@ -4938,7 +4938,7 @@ body {
   color: var(--gold-primary);
 }
 
-.faq-toggle-icon {
+.faq-accordion-item .faq-toggle-icon {
   font-size: 1.4rem;
   color: var(--text-secondary);
   transition: var(--transition-fast);
@@ -4950,7 +4950,7 @@ body {
   transform: rotate(180deg);
 }
 
-.faq-answer-content {
+.faq-accordion-item .faq-answer-content {
   max-height: 0;
   opacity: 0;
   transition: max-height 0.3s cubic-bezier(0, 1, 0, 1), opacity 0.2s ease-out;
