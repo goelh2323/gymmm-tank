@@ -4220,6 +4220,13 @@ body {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
+  .main-display-img-wrap {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .detail-thumbnails-row {
+    justify-content: center;
+  }
 }
 
 /* Left Column: Image Showcase */
@@ -4884,7 +4891,7 @@ body {
   margin-bottom: 2.2rem;
   background: linear-gradient(90deg, #ffffff, var(--gold-primary));
   -webkit-background-clip: text;
-  -webkit-text-fillColor: transparent;
+  -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 

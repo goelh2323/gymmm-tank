@@ -1808,7 +1808,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               src={activeMainImage} 
               alt={product.name} 
               className="detail-main-img" 
-              style={{ objectFit: activeImageTab === 'mockup' ? 'cover' : 'contain', padding: activeImageTab === 'mockup' ? '0' : '1.5rem' }}
+              style={{ objectFit: 'contain', padding: activeImageTab === 'mockup' ? '1rem' : '1.5rem' }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = activeImageTab === 'mockup' ? '/images/pre_workout.png' : '/images/general_nutrition.png';
               }}
