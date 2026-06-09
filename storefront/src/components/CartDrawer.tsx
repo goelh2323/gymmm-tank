@@ -48,6 +48,7 @@ export const CartDrawer: React.FC = () => {
 
   // Coins Redemption State
   const [redeemCoins, setRedeemCoins] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   // Shipping Address Fields
   const [shipName, setShipName] = useState('');
@@ -187,6 +188,8 @@ export const CartDrawer: React.FC = () => {
   };
 
   const handlePlaceOrderSubmit = async () => {
+    if (placingOrder) return;
+
     // If credit card selected, validate digits
     if (paymentMethod === 'CARD') {
       if (cardNumber.replace(/\s+/g, '').length < 16 || cardExpiry.length < 5 || cardCvv.length < 3) {
@@ -234,11 +237,18 @@ export const CartDrawer: React.FC = () => {
       items: itemsPayload
     };
 
-    const orderResult = await placeOrder(orderPayload);
-    if (orderResult) {
-      setCompletedOrder(orderResult);
-      clearCart();
-      setStep(4);
+    setPlacingOrder(true);
+    try {
+      const orderResult = await placeOrder(orderPayload);
+      if (orderResult) {
+        setCompletedOrder(orderResult);
+        clearCart();
+        setStep(4);
+      }
+    } catch (err) {
+      console.error('Error placing order:', err);
+    } finally {
+      setPlacingOrder(false);
     }
   };
 
@@ -806,9 +816,14 @@ export const CartDrawer: React.FC = () => {
                     <ChevronLeft size={16} />
                     Back to Address
                   </button>
-                  <button className="checkout-btn" onClick={handlePlaceOrderSubmit}>
-                    Confirm & Place Order {formatPrice(finalTotal)}
-                    <ChevronRight size={16} />
+                  <button 
+                    className="checkout-btn" 
+                    onClick={handlePlaceOrderSubmit}
+                    disabled={placingOrder}
+                    style={{ opacity: placingOrder ? 0.6 : 1, cursor: placingOrder ? 'not-allowed' : 'pointer' }}
+                  >
+                    {placingOrder ? 'Placing Order...' : `Confirm & Place Order ${formatPrice(finalTotal)}`}
+                    {!placingOrder && <ChevronRight size={16} />}
                   </button>
                 </div>
               </div>
