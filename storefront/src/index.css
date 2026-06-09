@@ -1168,7 +1168,7 @@ main.storefront-main {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(5px);
-  z-index: 200;
+  z-index: 2000;
   animation: fadeIn 0.25s ease-out;
 }
 
@@ -1182,7 +1182,7 @@ main.storefront-main {
   background-color: var(--bg-secondary);
   border-left: 1px solid var(--border-glass);
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.8);
-  z-index: 201;
+  z-index: 2001;
   display: flex;
   flex-direction: column;
   animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3797,7 +3797,7 @@ body {
   background-color: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
