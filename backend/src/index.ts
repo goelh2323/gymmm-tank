@@ -638,14 +638,33 @@ app.put('/api/v1/admin/orders/:id/status', authenticateAdmin, async (req: AuthRe
     const { id } = req.params;
     const { fulfillment, paymentStatus } = req.body;
 
-    const existingOrder = await prisma.order.findUnique({ where: { id } });
+    const existingOrder = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true }
+    });
     if (!existingOrder) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
     const updateData: any = {};
-    if (fulfillment) updateData.fulfillment = fulfillment; // PENDING, SHIPPED, DELIVERED
+    if (fulfillment) updateData.fulfillment = fulfillment; // PENDING, SHIPPED, DELIVERED, CANCELLED
     if (paymentStatus) updateData.paymentStatus = paymentStatus; // PENDING, PAID
+
+    // If order is cancelled and wasn't cancelled before, increment product stock
+    if (fulfillment === 'CANCELLED' && existingOrder.fulfillment !== 'CANCELLED') {
+      for (const item of existingOrder.items) {
+        if (item.productId !== 'free-shaker-bottle') {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                increment: item.quantity
+              }
+            }
+          });
+        }
+      }
+    }
 
     const updatedOrder = await prisma.order.update({
       where: { id },

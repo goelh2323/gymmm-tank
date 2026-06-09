@@ -38,6 +38,7 @@ export const AdminPanel: React.FC = () => {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [selectedUserForModal, setSelectedUserForModal] = useState<User | null>(null);
 
   // Auth local states
   const [email, setEmail] = useState('');
@@ -594,6 +595,8 @@ export const AdminPanel: React.FC = () => {
                               ? 'badge-instock' 
                               : order.fulfillment === 'SHIPPED' 
                               ? 'badge-bestseller' 
+                              : order.fulfillment === 'CANCELLED'
+                              ? 'badge-low-stock'
                               : 'badge-low-stock'
                           }`}>
                             {order.fulfillment}
@@ -642,6 +645,31 @@ export const AdminPanel: React.FC = () => {
                             💰 Mark Paid
                           </button>
                         )}
+                        {order.fulfillment !== 'DELIVERED' && order.fulfillment !== 'CANCELLED' && (
+                          <button 
+                            className="admin-btn" 
+                            style={{ 
+                              padding: '0.3rem 0.5rem', 
+                              fontSize: '0.75rem', 
+                              marginTop: 0, 
+                              backgroundColor: 'rgba(239, 68, 68, 0.15)', 
+                              color: 'var(--accent-red)', 
+                              border: '1px solid var(--accent-red)' 
+                            }}
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to cancel order #${order.id.substring(0, 8).toUpperCase()}? This will restore stock levels.`)) {
+                                handleUpdateStatus(order.id, 'CANCELLED');
+                              }
+                            }}
+                          >
+                            ❌ Cancel Order
+                          </button>
+                        )}
+                        {order.fulfillment === 'CANCELLED' && (
+                          <span style={{ color: 'var(--accent-red)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            ❌ Order Cancelled
+                          </span>
+                        )}
                         {order.fulfillment === 'DELIVERED' && order.paymentStatus === 'PAID' && (
                           <span style={{ color: '#10b981', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                             <CheckCircle size={12} /> Fulfillment Completed
@@ -683,7 +711,13 @@ export const AdminPanel: React.FC = () => {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id}>
+                  <tr 
+                    key={user.id}
+                    onClick={() => setSelectedUserForModal(user)}
+                    style={{ cursor: 'pointer', transition: 'background-color 0.2s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(212, 175, 55, 0.05)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+                  >
                     <td>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name}</div>
                       <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.2rem' }}>
@@ -956,6 +990,174 @@ export const AdminPanel: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Customer Details & Orders History Modal */}
+      {selectedUserForModal && (
+        <div className="modal-overlay" onClick={() => setSelectedUserForModal(null)}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: '850px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.5rem',
+                borderBottom: '1px solid var(--border-glass)',
+                paddingBottom: '0.8rem'
+              }}
+            >
+              <h2 className="brand-text" style={{ fontSize: '1.4rem', animation: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                👤 Customer Profile & Orders
+              </h2>
+              <button
+                className="cart-close-btn"
+                onClick={() => setSelectedUserForModal(null)}
+                style={{ width: '28px', height: '28px' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Customer Details Content Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', alignItems: 'start' }}>
+              {/* Profile Card */}
+              <div 
+                style={{ 
+                  backgroundColor: 'rgba(25, 25, 25, 0.5)', 
+                  border: '1px solid var(--border-glass)', 
+                  padding: '1.2rem', 
+                  borderRadius: '6px' 
+                }}
+              >
+                <h3 className="text-gold" style={{ fontSize: '1.1rem', marginBottom: '1rem', fontFamily: 'var(--font-athletic)', textTransform: 'uppercase' }}>
+                  Account Summary
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', display: 'block' }}>FULL NAME</span>
+                    <strong style={{ fontSize: '1rem' }}>{selectedUserForModal.name}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', display: 'block' }}>EMAIL ADDRESS</span>
+                    <span style={{ fontSize: '0.9rem' }}>{selectedUserForModal.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', display: 'block' }}>ACCOUNT ROLE</span>
+                    <span 
+                      className={`admin-table-badge ${selectedUserForModal.role === 'ADMIN' ? 'badge-bestseller' : 'badge-instock'}`}
+                      style={{ marginTop: '0.2rem', display: 'inline-block' }}
+                    >
+                      {selectedUserForModal.role}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', display: 'block' }}>TANK COINS BALANCE</span>
+                    <strong style={{ fontSize: '1.1rem', color: 'var(--gold-primary)' }}>🪙 {selectedUserForModal.coins}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', display: 'block' }}>REGISTRATION DATE</span>
+                    <span style={{ fontSize: '0.85rem' }}>
+                      {selectedUserForModal.createdAt ? new Date(selectedUserForModal.createdAt).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'N/A'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: '0.75rem', display: 'block' }}>CUSTOMER DATABASE ID</span>
+                    <code style={{ fontSize: '0.7rem', wordBreak: 'break-all' }}>{selectedUserForModal.id}</code>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order History */}
+              <div>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontFamily: 'var(--font-athletic)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Orders Log</span>
+                  <span className="text-gold" style={{ fontSize: '0.85rem' }}>
+                    ({orders.filter(o => o.userId === selectedUserForModal.id || o.customerEmail === selectedUserForModal.email).length} Orders)
+                  </span>
+                </h3>
+
+                {orders.filter(o => o.userId === selectedUserForModal.id || o.customerEmail === selectedUserForModal.email).length === 0 ? (
+                  <div style={{ padding: '3rem 1rem', textAlign: 'center', border: '1px dashed var(--border-glass)', borderRadius: '6px' }} className="text-muted">
+                    No orders recorded for this customer account.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {orders
+                      .filter(o => o.userId === selectedUserForModal.id || o.customerEmail === selectedUserForModal.email)
+                      .map((order) => (
+                        <div 
+                          key={order.id}
+                          style={{
+                            border: '1px solid var(--border-glass)',
+                            borderRadius: '6px',
+                            padding: '1rem',
+                            backgroundColor: 'rgba(20, 20, 20, 0.4)'
+                          }}
+                        >
+                          {/* Order Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.4rem' }}>
+                            <div>
+                              <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--gold-primary)' }}>
+                                #{order.id.substring(0, 8).toUpperCase()}
+                              </span>
+                              <span className="text-muted" style={{ fontSize: '0.75rem', marginLeft: '0.6rem' }}>
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.3rem' }}>
+                              <span className={`admin-table-badge ${
+                                order.fulfillment === 'DELIVERED' 
+                                  ? 'badge-instock' 
+                                  : order.fulfillment === 'SHIPPED' 
+                                  ? 'badge-bestseller' 
+                                  : order.fulfillment === 'CANCELLED'
+                                  ? 'badge-low-stock'
+                                  : 'badge-low-stock'
+                              }`}>
+                                {order.fulfillment}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Order Items */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {order.items.map((item, idx) => (
+                              <div key={idx} style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>
+                                  • <strong>{item.productName}</strong> <span className="text-gold">x{item.quantity}</span>
+                                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', paddingLeft: '0.6rem' }}>
+                                    {item.flavor} | {item.size}
+                                  </div>
+                                </span>
+                                <span>{formatPrice(item.price * item.quantity)}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Total Info */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.4rem', fontSize: '0.85rem' }}>
+                            <span className="text-muted">Paid via {order.paymentMethod}</span>
+                            <span>Total: <strong style={{ color: 'var(--gold-primary)' }}>{formatPrice(order.total)}</strong></span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
