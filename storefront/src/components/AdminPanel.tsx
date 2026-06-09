@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
-import type { Product, Order } from '../context/StoreContext';
+import type { Product, Order, User } from '../context/StoreContext';
 import {
   Lock,
   Plus,
@@ -29,12 +29,15 @@ export const AdminPanel: React.FC = () => {
     resetAndSeed,
     fetchAdminOrders,
     updateOrderStatus,
+    fetchAdminUsers,
   } = useStore();
 
   // Dashboard Tabs & Orders Data States
-  const [adminTab, setAdminTab] = useState<'products' | 'orders'>('products');
+  const [adminTab, setAdminTab] = useState<'products' | 'orders' | 'users'>('products');
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   // Auth local states
   const [email, setEmail] = useState('');
@@ -82,9 +85,23 @@ export const AdminPanel: React.FC = () => {
     setOrdersLoading(false);
   };
 
+  // ----------------------------------------------------
+  // Users Handling
+  // ----------------------------------------------------
+  const loadUsers = async () => {
+    if (!token) return;
+    setUsersLoading(true);
+    const data = await fetchAdminUsers();
+    setUsers(data);
+    setUsersLoading(false);
+  };
+
   useEffect(() => {
     if (token) {
       loadOrders();
+      if (adminTab === 'users') {
+        loadUsers();
+      }
     }
   }, [token, adminTab]);
 
@@ -360,6 +377,12 @@ export const AdminPanel: React.FC = () => {
         >
           📦 Checkout Orders ({orders.length})
         </button>
+        <button 
+          className={`admin-tab-btn ${adminTab === 'users' ? 'active' : ''}`}
+          onClick={() => setAdminTab('users')}
+        >
+          👥 Registered Customers ({users.length})
+        </button>
       </div>
 
       {/* Main Tab Content */}
@@ -482,7 +505,7 @@ export const AdminPanel: React.FC = () => {
             </tbody>
           </table>
         </div>
-      ) : (
+      ) : adminTab === 'orders' ? (
         <div className="admin-table-wrapper">
           <table className="admin-table orders-table">
             <thead>
@@ -624,6 +647,71 @@ export const AdminPanel: React.FC = () => {
                             <CheckCircle size={12} /> Fulfillment Completed
                           </span>
                         )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="admin-table-wrapper">
+          <table className="admin-table users-table">
+            <thead>
+              <tr>
+                <th>Customer Details</th>
+                <th>Email Address</th>
+                <th>Account Role</th>
+                <th>Tank Coins</th>
+                <th>Registration Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usersLoading ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
+                    <RefreshCw size={24} style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
+                    <p style={{ marginTop: '0.5rem' }}>Loading Customers...</p>
+                  </td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
+                    No registered customers found.
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name}</div>
+                      <div className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                        ID: {user.id}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: '0.9rem' }}>{user.email}</div>
+                    </td>
+                    <td>
+                      <span className={`admin-table-badge ${user.role === 'ADMIN' ? 'badge-bestseller' : 'badge-instock'}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--gold-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                        🪙 {user.coins}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: '0.85rem' }}>
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : 'N/A'}
                       </div>
                     </td>
                   </tr>

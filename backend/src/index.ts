@@ -609,6 +609,29 @@ app.get('/api/v1/admin/orders', authenticateAdmin, async (req: AuthRequest, res:
   }
 });
 
+// Fetch all registered users (Admin only)
+app.get('/api/v1/admin/users', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        coins: true,
+        createdAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    res.json(users);
+  } catch (error) {
+    console.error('Fetch admin users error:', error);
+    res.status(500).json({ error: 'Could not fetch users' });
+  }
+});
+
 // Update order fulfillment or payment status (Admin only)
 app.put('/api/v1/admin/orders/:id/status', authenticateAdmin, async (req: AuthRequest, res: Response) => {
   try {

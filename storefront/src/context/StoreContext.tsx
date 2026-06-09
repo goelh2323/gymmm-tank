@@ -23,6 +23,7 @@ export interface User {
   email: string;
   role: string;
   coins: number;
+  createdAt?: string;
 }
 
 export interface OrderItem {
@@ -95,6 +96,7 @@ interface StoreContextType {
   fetchAdminOrders: () => Promise<Order[]>;
   updateOrderStatus: (orderId: string, statusPayload: { fulfillment?: string; paymentStatus?: string }) => Promise<boolean>;
   fetchCustomerOrders: () => Promise<Order[]>;
+  fetchAdminUsers: () => Promise<User[]>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -425,6 +427,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const fetchAdminUsers = async (): Promise<User[]> => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch admin users');
+      return await res.json();
+    } catch (err: any) {
+      console.error(err.message);
+      return [];
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, statusPayload: { fulfillment?: string; paymentStatus?: string }): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
@@ -493,6 +508,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         fetchAdminOrders,
         updateOrderStatus,
         fetchCustomerOrders,
+        fetchAdminUsers,
       }}
     >
       {children}
