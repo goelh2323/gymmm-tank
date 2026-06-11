@@ -924,6 +924,44 @@ app.post('/api/v1/admin/seed', authenticateAdmin, async (req: AuthRequest, res: 
   });
 });
 
+// Diagnostic Endpoint: test email SMTP settings
+app.get('/api/v1/test-email', async (req: Request, res: Response) => {
+  try {
+    if (!transporter) {
+      return res.status(500).json({
+        error: 'Transporter not initialized',
+        EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
+        EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
+      });
+    }
+
+    const info = await transporter.sendMail({
+      from: `"GYMMM TANK Test" <${process.env.EMAIL_USER || 'noreply@gymmmtank.com'}>`,
+      to: 'transformernutritionamb@gmail.com',
+      subject: '🧪 GYMMM TANK SMTP Test Email',
+      html: `<h3>If you receive this, your SMTP configuration is working perfectly!</h3>
+             <p><strong>Configured User:</strong> ${process.env.EMAIL_USER || 'None'}</p>
+             <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>`,
+    });
+
+    res.json({
+      success: true,
+      message: 'Test email sent successfully',
+      info,
+      EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
+      EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Unknown SMTP error',
+      stack: err.stack,
+      EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
+      EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
+    });
+  }
+});
+
 // Start the Express Server
 app.listen(PORT, () => {
   console.log(`========================================`);
