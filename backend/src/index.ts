@@ -75,6 +75,12 @@ let transporter: nodemailer.Transporter;
 let testEmailAccount: { user: string; pass: string } | null = null;
 
 const initEmailTransporter = async () => {
+  // If RESEND_API_KEY is defined, we skip Nodemailer SMTP initialization (use Resend HTTP API)
+  if (process.env.RESEND_API_KEY) {
+    console.log('📧 Email system ready (Resend HTTP API)');
+    return;
+  }
+
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     // Production: use real Gmail SMTP
     transporter = nodemailer.createTransport({
@@ -103,12 +109,59 @@ const initEmailTransporter = async () => {
   }
 };
 
+// Centralized Email Sender Helper (handles both Resend HTTP API and Nodemailer fallback)
+const sendEmail = async ({ to, subject, html }: { to: string; subject: string; html: string }) => {
+  if (process.env.RESEND_API_KEY) {
+    try {
+      // Free tier Resend accounts are restricted to sending from onboarding@resend.dev
+      const from = process.env.RESEND_FROM || 'GYMMM TANK <onboarding@resend.dev>';
+      
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from,
+          to,
+          subject,
+          html,
+        }),
+      });
+
+      const data = await res.json() as any;
+      if (!res.ok) {
+        throw new Error(data.message || JSON.stringify(data));
+      }
+      console.log(`📧 Email sent successfully via Resend API: ${data.id}`);
+      return data;
+    } catch (err: any) {
+      console.error('❌ Resend API Send Failed:', err.message);
+      throw err;
+    }
+  } else if (transporter) {
+    const info = await transporter.sendMail({
+      from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+      to,
+      subject,
+      html,
+    });
+
+    if (!process.env.EMAIL_USER) {
+      console.log(`📧 SMTP Email preview: ${nodemailer.getTestMessageUrl(info)}`);
+    }
+    return info;
+  } else {
+    throw new Error('No email sender is configured (missing RESEND_API_KEY or EMAIL_USER/EMAIL_PASS)');
+  }
+};
+
 // Helper: format ₹ amounts
 const formatINR = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 
 // Send order confirmation email to the customer
 const sendOrderConfirmationEmail = async (order: any) => {
-  if (!transporter) return;
   try {
     const itemsHtml = (order.items || [])
       .map((item: any) => `
@@ -165,17 +218,11 @@ const sendOrderConfirmationEmail = async (order: any) => {
         </div>
       </div>`;
 
-    const info = await transporter.sendMail({
-      from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+    await sendEmail({
       to: order.customerEmail,
       subject: `✅ Order Confirmed #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
       html,
     });
-
-    if (!process.env.EMAIL_USER) {
-      // In dev/Ethereal mode, print the preview URL to console
-      console.log(`📧 Order confirmation email preview: ${nodemailer.getTestMessageUrl(info)}`);
-    }
   } catch (err) {
     console.error('Failed to send order confirmation email:', err);
     // Non-fatal: don't let email failure break the order response
@@ -184,7 +231,6 @@ const sendOrderConfirmationEmail = async (order: any) => {
 
 // Send shipment notification email
 const sendShipmentEmail = async (order: any) => {
-  if (!transporter) return;
   try {
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
@@ -210,16 +256,11 @@ const sendShipmentEmail = async (order: any) => {
         </div>
       </div>`;
 
-    const info = await transporter.sendMail({
-      from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+    await sendEmail({
       to: order.customerEmail,
       subject: `🚀 Your Order is Shipped! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
       html,
     });
-
-    if (!process.env.EMAIL_USER) {
-      console.log(`📧 Shipment email preview: ${nodemailer.getTestMessageUrl(info)}`);
-    }
   } catch (err) {
     console.error('Failed to send shipment email:', err);
   }
@@ -924,40 +965,33 @@ app.post('/api/v1/admin/seed', authenticateAdmin, async (req: AuthRequest, res: 
   });
 });
 
-// Diagnostic Endpoint: test email SMTP settings
+// Diagnostic Endpoint: test email SMTP/Resend API settings
 app.get('/api/v1/test-email', async (req: Request, res: Response) => {
   try {
-    if (!transporter) {
-      return res.status(500).json({
-        error: 'Transporter not initialized',
-        EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
-        EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
-      });
-    }
-
-    const info = await transporter.sendMail({
-      from: `"GYMMM TANK Test" <${process.env.EMAIL_USER || 'noreply@gymmmtank.com'}>`,
-      to: 'transformernutritionamb@gmail.com',
-      subject: '🧪 GYMMM TANK SMTP Test Email',
-      html: `<h3>If you receive this, your SMTP configuration is working perfectly!</h3>
-             <p><strong>Configured User:</strong> ${process.env.EMAIL_USER || 'None'}</p>
+    const toAddress = (req.query.to as string) || 'transformernutritionamb@gmail.com';
+    const result = await sendEmail({
+      to: toAddress,
+      subject: '🧪 GYMMM TANK Email Diagnostic Test',
+      html: `<h3>If you receive this, your email configuration is working perfectly!</h3>
+             <p><strong>Active Driver:</strong> ${process.env.RESEND_API_KEY ? 'Resend HTTP API' : 'Nodemailer SMTP'}</p>
              <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>`,
     });
 
     res.json({
       success: true,
       message: 'Test email sent successfully',
-      info,
-      EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
-      EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
+      driver: process.env.RESEND_API_KEY ? 'Resend API' : 'Nodemailer SMTP',
+      result,
     });
   } catch (err: any) {
     res.status(500).json({
       success: false,
-      error: err.message || 'Unknown SMTP error',
+      error: err.message || 'Unknown Email error',
       stack: err.stack,
+      driver: process.env.RESEND_API_KEY ? 'Resend API' : 'Nodemailer SMTP',
       EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
       EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
+      RESEND_API_KEY: process.env.RESEND_API_KEY ? 'Set' : 'Not Set',
     });
   }
 });
