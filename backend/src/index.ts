@@ -361,6 +361,94 @@ const sendShipmentEmail = async (order: any) => {
   }
 };
 
+// Send delivery confirmation email
+const sendDeliveryEmail = async (order: any) => {
+  try {
+    const itemsHtml = (order.items || [])
+      .map((item: any) => `
+        <tr style="border-bottom: 1px solid #221c0e;">
+          <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #ffffff; font-family: 'Montserrat', sans-serif;">${item.productName}</td>
+          <td style="padding: 12px; font-size: 12px; color: #aaaaaa; font-family: 'Montserrat', sans-serif;">${item.flavor} · ${item.size}</td>
+          <td style="padding: 12px; font-size: 13px; color: #ffffff; text-align: center; font-family: 'Montserrat', sans-serif;">${item.quantity}</td>
+          <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #d4af37; text-align: right; font-family: 'Montserrat', sans-serif;">${formatINR(item.price * item.quantity)}</td>
+        </tr>`
+      ).join('');
+
+    const html = `
+      <div style="background-color: #030303; padding: 40px 20px; font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; min-height: 100%;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #0c0c0c; border: 1px solid #221c0e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center;">
+          
+          <!-- Branding Header -->
+          <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
+            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
+              <span style="color: #d4af37;">GYMMM</span> TANK
+            </h1>
+            <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
+          </div>
+
+          <!-- Main Content -->
+          <div style="padding: 40px 32px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">📦</div>
+            <h2 style="color: #ffffff; margin: 0 0 16px; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #d4af37;">
+              Order Delivered!
+            </h2>
+            <p style="color: #cccccc; margin: 0 auto 28px; font-size: 14px; line-height: 1.6; max-width: 460px;">
+              Hey <strong>${order.customerName}</strong>, your GYMMM TANK order <strong style="color: #d4af37;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been successfully delivered! Time to fuel up and crush those goals.
+            </p>
+
+            <!-- Items Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px; text-align: left;">
+              <thead>
+                <tr style="background-color: #121212; border-bottom: 2px solid #221c0e;">
+                  <th style="padding: 12px; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">PRODUCT</th>
+                  <th style="padding: 12px; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">VARIANT</th>
+                  <th style="padding: 12px; text-align: center; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">QTY</th>
+                  <th style="padding: 12px; text-align: right; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">AMOUNT</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <!-- Share the Gains -->
+            <div style="background-color: #121212; border: 1px solid #221c0e; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 28px;">
+              <p style="margin: 0 0 10px; color: #d4af37; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Share Your Gains! 📸</p>
+              <p style="margin: 0 0 16px; color: #cccccc; font-size: 13px; line-height: 1.5;">
+                Snap a photo of your GYMMM TANK fuel, tag us on Instagram <strong style="color: #ffffff;">@gymmmtank</strong>, and use the hashtag <strong style="color: #d4af37;">#GYMMMTANK</strong> to get featured and earn exclusive rewards!
+              </p>
+              <a href="https://instagram.com/gymmmtank" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #f5d98a 50%, #d4af37 100%); padding: 12px 24px; border-radius: 4px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #000000; text-decoration: none; box-shadow: 0 4px 12px rgba(212,175,55,0.3);">
+                Tag @gymmmtank
+              </a>
+            </div>
+
+            <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0;">
+              Need help or have questions about your supplements? Contact support at <a href="mailto:support@gymmmtank.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+            </p>
+
+          </div>
+
+          <!-- Footer Banner -->
+          <div style="background-color: #080808; padding: 24px 32px; border-top: 1px solid #1a1a1a;">
+            <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+            </p>
+          </div>
+
+        </div>
+      </div>`;
+
+    await sendEmail({
+      to: order.customerEmail,
+      subject: `📦 Your Order is Delivered! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      html,
+    });
+  } catch (err) {
+    console.error('Failed to send delivery email:', err);
+  }
+};
+
 // Initialize email transporter on startup
 initEmailTransporter().catch(console.error);
 
@@ -1030,6 +1118,11 @@ app.put('/api/v1/admin/orders/:id/status', authenticateAdmin, async (req: AuthRe
     // Send shipment email when admin marks order as SHIPPED (fire-and-forget)
     if (fulfillment === 'SHIPPED' && existingOrder.fulfillment !== 'SHIPPED') {
       sendShipmentEmail(updatedOrder).catch(() => {});
+    }
+
+    // Send delivery email when admin marks order as DELIVERED (fire-and-forget)
+    if (fulfillment === 'DELIVERED' && existingOrder.fulfillment !== 'DELIVERED') {
+      sendDeliveryEmail(updatedOrder).catch(() => {});
     }
 
     res.json({
