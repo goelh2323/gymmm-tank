@@ -165,56 +165,116 @@ const sendOrderConfirmationEmail = async (order: any) => {
   try {
     const itemsHtml = (order.items || [])
       .map((item: any) => `
-        <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">${item.productName}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#666;">${item.flavor} | ${item.size}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;">${item.quantity}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;">${formatINR(item.price * item.quantity)}</td>
+        <tr style="border-bottom: 1px solid #221c0e;">
+          <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #ffffff; font-family: 'Montserrat', sans-serif;">${item.productName}</td>
+          <td style="padding: 12px; font-size: 12px; color: #aaaaaa; font-family: 'Montserrat', sans-serif;">${item.flavor} · ${item.size}</td>
+          <td style="padding: 12px; font-size: 13px; color: #ffffff; text-align: center; font-family: 'Montserrat', sans-serif;">${item.quantity}</td>
+          <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #d4af37; text-align: right; font-family: 'Montserrat', sans-serif;">${formatINR(item.price * item.quantity)}</td>
         </tr>`
       ).join('');
 
     const html = `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:linear-gradient(135deg,#0a0a0a,#1a1a2e);padding:32px;text-align:center;">
-          <h1 style="color:#d4af37;margin:0;font-size:28px;letter-spacing:2px;">GYMMM TANK</h1>
-          <p style="color:#888;margin:8px 0 0;font-size:12px;letter-spacing:3px;">ORDER CONFIRMED</p>
-        </div>
-        <div style="padding:32px;">
-          <h2 style="color:#1a1a2e;margin:0 0 8px;">Thank you, ${order.customerName}! 💪</h2>
-          <p style="color:#555;margin:0 0 24px;">Your order <strong>#${order.id.slice(0, 8).toUpperCase()}</strong> has been placed successfully and is being processed.</p>
+      <div style="background-color: #030303; padding: 40px 20px; font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; min-height: 100%;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #0c0c0c; border: 1px solid #221c0e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.8);">
           
-          <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
-            <thead>
-              <tr style="background:#f8f4e8;">
-                <th style="padding:10px 12px;text-align:left;font-size:12px;color:#333;">PRODUCT</th>
-                <th style="padding:10px 12px;text-align:left;font-size:12px;color:#333;">VARIANT</th>
-                <th style="padding:10px 12px;text-align:center;font-size:12px;color:#333;">QTY</th>
-                <th style="padding:10px 12px;text-align:right;font-size:12px;color:#333;">AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody>${itemsHtml}</tbody>
-          </table>
+          <!-- Branding Header -->
+          <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid #d4af37;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
+              <span style="color: #d4af37;">GYMMM</span> TANK
+            </h1>
+            <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
+          </div>
 
-          <div style="background:#f8f9ff;border-left:4px solid #d4af37;padding:16px 20px;margin-bottom:24px;">
-            <table style="width:100%;">
-              <tr><td style="color:#555;padding:3px 0;">Subtotal</td><td style="text-align:right;color:#333;">${formatINR(order.subtotal)}</td></tr>
-              ${order.savings > 0 ? `<tr><td style="color:#22c55e;padding:3px 0;">Savings</td><td style="text-align:right;color:#22c55e;">-${formatINR(order.savings)}</td></tr>` : ''}
-              ${order.coinsRedeemed > 0 ? `<tr><td style="color:#d4af37;padding:3px 0;">Tank Coins Redeemed</td><td style="text-align:right;color:#d4af37;">-${order.coinsRedeemed} coins</td></tr>` : ''}
-              <tr><td style="font-weight:700;font-size:16px;padding:8px 0 0;color:#1a1a2e;">Total</td><td style="text-align:right;font-weight:700;font-size:16px;color:#d4af37;padding-top:8px;">${formatINR(order.total)}</td></tr>
+          <!-- Main Content -->
+          <div style="padding: 40px 32px;">
+            <h2 style="color: #ffffff; margin: 0 0 12px; font-size: 22px; font-weight: 700; border-left: 4px solid #d4af37; padding-left: 12px; text-transform: uppercase; letter-spacing: 1px;">
+              Order Confirmed! 💪
+            </h2>
+            <p style="color: #cccccc; margin: 0 0 28px; font-size: 14px; line-height: 1.6;">
+              Hey <strong>${order.customerName}</strong>, your order <strong style="color: #d4af37;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been locked in and is currently being prepped for shipment.
+            </p>
+
+            <!-- Items Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px;">
+              <thead>
+                <tr style="background-color: #121212; border-bottom: 2px solid #221c0e;">
+                  <th style="padding: 12px; text-align: left; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">PRODUCT</th>
+                  <th style="padding: 12px; text-align: left; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">VARIANT</th>
+                  <th style="padding: 12px; text-align: center; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">QTY</th>
+                  <th style="padding: 12px; text-align: right; font-size: 11px; color: #d4af37; text-transform: uppercase; letter-spacing: 1px;">AMOUNT</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
             </table>
+
+            <!-- Order Summary Card -->
+            <div style="background-color: #121212; border: 1px solid #221c0e; border-radius: 6px; padding: 20px; margin-bottom: 28px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr>
+                  <td style="color: #aaaaaa; padding: 6px 0;">Subtotal</td>
+                  <td style="text-align: right; color: #ffffff; padding: 6px 0;">${formatINR(order.subtotal)}</td>
+                </tr>
+                ${order.savings > 0 ? `
+                <tr>
+                  <td style="color: #22c55e; padding: 6px 0;">Promo Discount</td>
+                  <td style="text-align: right; color: #22c55e; padding: 6px 0;">-${formatINR(order.savings)}</td>
+                </tr>
+                ` : ''}
+                ${order.coinsRedeemed > 0 ? `
+                <tr>
+                  <td style="color: #d4af37; padding: 6px 0;">Tank Coins Redeemed (${order.coinsRedeemed})</td>
+                  <td style="text-align: right; color: #d4af37; padding: 6px 0;">-${formatINR(order.coinsRedeemed * 0.5)}</td>
+                </tr>
+                ` : ''}
+                <tr style="border-top: 1px solid #221c0e;">
+                  <td style="font-weight: 700; font-size: 16px; color: #ffffff; padding: 12px 0 0;">Total Paid</td>
+                  <td style="text-align: right; font-weight: 700; font-size: 18px; color: #d4af37; padding: 12px 0 0;">${formatINR(order.total)}</td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- Shipping & Payment Details -->
+            <div style="background: linear-gradient(135deg, #0e0e0e 0%, #161616 100%); border: 1px solid #221c0e; border-radius: 6px; padding: 24px; margin-bottom: 28px;">
+              <h3 style="margin: 0 0 12px; font-size: 12px; color: #d4af37; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">Delivery & Payment Details</h3>
+              <p style="margin: 0 0 8px; color: #ffffff; font-size: 14px; font-weight: 600;">${order.customerName}</p>
+              <p style="margin: 0 0 16px; color: #bbbbbb; font-size: 13px; line-height: 1.5;">
+                ${order.address}, ${order.city}, ${order.state} - ${order.pincode}
+              </p>
+              <div style="border-top: 1px solid #221c0e; padding-top: 12px; font-size: 12px; color: #aaaaaa;">
+                <span style="display: inline-block; margin-right: 20px;">Method: <strong style="color: #ffffff;">${order.paymentMethod}</strong></span>
+                <span>Status: <strong style="color: #f59e0b;">${order.paymentStatus}</strong></span>
+              </div>
+            </div>
+
+            <!-- Loyalty Reward Message -->
+            ${order.coinsEarned > 0 ? `
+            <div style="background-color: rgba(212,175,55,0.06); border: 1px dashed rgba(212,175,55,0.3); border-radius: 6px; padding: 16px; text-align: center; margin-bottom: 28px;">
+              <p style="margin: 0; color: #d4af37; font-size: 14px; font-weight: 600;">
+                🏆 You earned <strong style="font-size: 16px;">${order.coinsEarned}</strong> Tank Coins on this order!
+              </p>
+              <p style="margin: 4px 0 0; color: #888888; font-size: 11px;">Redeem them on your next purchase (1 Coin = ₹0.50)</p>
+            </div>
+            ` : ''}
+
+            <!-- Help/Footer info -->
+            <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0; text-align: center;">
+              Questions about your gear? Reach us at <a href="mailto:support@gymmmtank.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+            </p>
+
           </div>
 
-          <div style="background:#0a0a0a;color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-            <p style="margin:0 0 8px;font-size:12px;color:#d4af37;letter-spacing:2px;font-weight:700;">DELIVERY DETAILS</p>
-            <p style="margin:0;color:#ccc;font-size:14px;line-height:1.6;">${order.address}, ${order.city}, ${order.state} — ${order.pincode}</p>
-            <p style="margin:4px 0 0;color:#888;font-size:13px;">Payment: ${order.paymentMethod} · Status: <span style="color:#f59e0b;">${order.paymentStatus}</span></p>
+          <!-- Footer Banner -->
+          <div style="background-color: #080808; padding: 24px 32px; text-align: center; border-top: 1px solid #1a1a1a;">
+            <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+            </p>
+            <p style="color: #333333; font-size: 9px; margin: 4px 0 0;">
+              Engineered for athletes who demand maximum strength and recovery.
+            </p>
           </div>
 
-          ${order.coinsEarned > 0 ? `<p style="color:#d4af37;font-weight:600;">🏆 You earned <strong>${order.coinsEarned} Tank Coins</strong> on this order!</p>` : ''}
-          <p style="color:#888;font-size:13px;">Questions? Contact us at <a href="mailto:support@gymmmtank.com" style="color:#d4af37;">support@gymmmtank.com</a> or call 9350931316</p>
-        </div>
-        <div style="background:#0a0a0a;padding:16px;text-align:center;">
-          <p style="color:#555;font-size:11px;margin:0;">© ${new Date().getFullYear()} GYMMM TANK Supplements · Engineered for Mind, Muscle & Performance</p>
         </div>
       </div>`;
 
@@ -233,26 +293,59 @@ const sendOrderConfirmationEmail = async (order: any) => {
 const sendShipmentEmail = async (order: any) => {
   try {
     const html = `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
-        <div style="background:linear-gradient(135deg,#0a0a0a,#1a1a2e);padding:32px;text-align:center;">
-          <h1 style="color:#d4af37;margin:0;font-size:28px;letter-spacing:2px;">GYMMM TANK</h1>
-          <p style="color:#888;margin:8px 0 0;font-size:12px;letter-spacing:3px;">YOUR ORDER IS ON ITS WAY!</p>
-        </div>
-        <div style="padding:32px;text-align:center;">
-          <div style="font-size:64px;margin-bottom:16px;">🚀</div>
-          <h2 style="color:#1a1a2e;margin:0 0 12px;">It's Shipped, ${order.customerName}!</h2>
-          <p style="color:#555;max-width:400px;margin:0 auto 24px;line-height:1.6;">
-            Your GYMMM TANK order <strong>#${order.id.slice(0, 8).toUpperCase()}</strong> has been dispatched and is on its way to you. Estimated delivery: <strong>3-5 business days</strong>.
-          </p>
-          <div style="background:#f8f4e8;border:2px solid #d4af37;border-radius:12px;padding:20px;display:inline-block;">
-            <p style="margin:0 0 4px;color:#888;font-size:12px;">DELIVERY ADDRESS</p>
-            <p style="margin:0;font-weight:600;color:#1a1a2e;">${order.address}, ${order.city}</p>
-            <p style="margin:2px 0 0;color:#555;">${order.state} — ${order.pincode}</p>
+      <div style="background-color: #030303; padding: 40px 20px; font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; min-height: 100%;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #0c0c0c; border: 1px solid #221c0e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center;">
+          
+          <!-- Branding Header -->
+          <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
+              <span style="color: #d4af37;">GYMMM</span> TANK
+            </h1>
+            <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
           </div>
-          <p style="color:#888;margin:24px 0 0;font-size:13px;">Need help? <a href="mailto:support@gymmmtank.com" style="color:#d4af37;">support@gymmmtank.com</a> | 9350931316</p>
-        </div>
-        <div style="background:#0a0a0a;padding:16px;text-align:center;">
-          <p style="color:#555;font-size:11px;margin:0;">© ${new Date().getFullYear()} GYMMM TANK Supplements · Engineered for Mind, Muscle & Performance</p>
+
+          <!-- Main Content -->
+          <div style="padding: 40px 32px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">🚀</div>
+            <h2 style="color: #ffffff; margin: 0 0 16px; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #d4af37;">
+              Your Order is Shipped!
+            </h2>
+            <p style="color: #cccccc; margin: 0 auto 28px; font-size: 14px; line-height: 1.6; max-width: 460px;">
+              Hey <strong>${order.customerName}</strong>, your GYMMM TANK fuel has been loaded and dispatched! Your package is officially on its way.
+            </p>
+
+            <!-- Details Summary Card -->
+            <div style="background-color: #121212; border: 1px solid #221c0e; border-radius: 8px; padding: 24px; display: inline-block; text-align: left; width: 100%; box-sizing: border-box; margin-bottom: 28px;">
+              <p style="margin: 0 0 4px; color: #aaaaaa; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;">Tracking Details</p>
+              <p style="margin: 0 0 16px; color: #ffffff; font-size: 15px; font-weight: 700;">Order #${order.id.slice(0, 8).toUpperCase()}</p>
+              
+              <p style="margin: 0 0 4px; color: #aaaaaa; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;">Delivery Address</p>
+              <p style="margin: 0 0 4px; color: #ffffff; font-size: 14px; font-weight: 600;">${order.customerName}</p>
+              <p style="margin: 0; color: #bbbbbb; font-size: 13px; line-height: 1.5;">
+                ${order.address}, ${order.city}, ${order.state} - ${order.pincode}
+              </p>
+            </div>
+
+            <!-- Action Info -->
+            <div style="margin-bottom: 28px;">
+              <div style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #f5d98a 50%, #d4af37 100%); padding: 14px 28px; border-radius: 4px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #000000; box-shadow: 0 4px 12px rgba(212,175,55,0.3);">
+                Delivery In 3 - 5 Days
+              </div>
+            </div>
+
+            <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0;">
+              Need help? Contact support at <a href="mailto:support@gymmmtank.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+            </p>
+
+          </div>
+
+          <!-- Footer Banner -->
+          <div style="background-color: #080808; padding: 24px 32px; border-top: 1px solid #1a1a1a;">
+            <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+            </p>
+          </div>
+
         </div>
       </div>`;
 
