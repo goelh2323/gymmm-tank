@@ -1065,7 +1065,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       const count = Math.floor(Math.random() * 6) + 10;
       const newParticles = Array.from({ length: count }).map((_, i) => ({
         id: Date.now() + Math.random() + i,
-        left: Math.random() < 0.5 ? Math.random() * 12 : 88 + Math.random() * 12, // Spawn only on left (0-12%) or right (88-100%) margins
+        left: window.innerWidth <= 768 
+          ? Math.random() * 90 + 5 
+          : (Math.random() < 0.5 ? Math.random() * 12 : 88 + Math.random() * 12), // Spawn across screen on mobile/tablet, otherwise side margins (0-12% or 88-100%)
         scale: Math.random() * 0.7 + 0.6, // scale between 0.6 and 1.3
         duration: Math.random() * 3.5 + 4.5, // 4.5s to 8s duration to drift up
         delay: Math.random() * 2, // stagger the animation start

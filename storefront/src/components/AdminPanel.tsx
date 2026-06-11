@@ -36,6 +36,9 @@ export const AdminPanel: React.FC = () => {
   const [adminTab, setAdminTab] = useState<'products' | 'orders' | 'users'>('products');
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersNextCursor, setOrdersNextCursor] = useState<string | null>(null);
+  const [ordersHasNextPage, setOrdersHasNextPage] = useState(false);
+  const [loadingMoreOrders, setLoadingMoreOrders] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [selectedUserForModal, setSelectedUserForModal] = useState<User | null>(null);
@@ -81,9 +84,22 @@ export const AdminPanel: React.FC = () => {
   const loadOrders = async () => {
     if (!token) return;
     setOrdersLoading(true);
-    const data = await fetchAdminOrders();
-    setOrders(data);
+    const result = await fetchAdminOrders(); // first page, no cursor
+    setOrders(result.orders);
+    setOrdersNextCursor(result.nextCursor);
+    setOrdersHasNextPage(result.hasNextPage);
     setOrdersLoading(false);
+  };
+
+  // Appends the next page of orders to the existing list
+  const loadMoreOrders = async () => {
+    if (!ordersNextCursor || loadingMoreOrders) return;
+    setLoadingMoreOrders(true);
+    const result = await fetchAdminOrders(ordersNextCursor);
+    setOrders(prev => [...prev, ...result.orders]);
+    setOrdersNextCursor(result.nextCursor);
+    setOrdersHasNextPage(result.hasNextPage);
+    setLoadingMoreOrders(false);
   };
 
   // ----------------------------------------------------
@@ -682,6 +698,24 @@ export const AdminPanel: React.FC = () => {
               )}
             </tbody>
           </table>
+          {/* Load More Orders button — shown when there are more pages */}
+          {ordersHasNextPage && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '1.5rem 0 0.5rem' }}>
+              <button
+                className="admin-btn admin-btn-primary"
+                onClick={loadMoreOrders}
+                disabled={loadingMoreOrders}
+                style={{ minWidth: '180px', opacity: loadingMoreOrders ? 0.7 : 1 }}
+              >
+                {loadingMoreOrders ? '⏳ Loading...' : `⬇️ Load More Orders (${orders.length} loaded)`}
+              </button>
+            </div>
+          )}
+          {!ordersHasNextPage && orders.length > 0 && (
+            <div style={{ textAlign: 'center', padding: '0.75rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+              ✓ All {orders.length} orders loaded
+            </div>
+          )}
         </div>
       ) : (
         <div className="admin-table-wrapper">

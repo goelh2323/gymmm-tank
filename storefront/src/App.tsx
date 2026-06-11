@@ -1172,6 +1172,8 @@ const LayoutWrapper: React.FC = () => {
 
   // Scroll Reveal hook using Intersection Observer
   useEffect(() => {
+    // Use threshold:0 so any pixel visible triggers the animation.
+    // rootMargin '0px' ensures no aggressive clipping on small mobile screens.
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -1180,14 +1182,37 @@ const LayoutWrapper: React.FC = () => {
           }
         });
       },
-      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
     );
 
-    const elements = document.querySelectorAll('.scroll-reveal');
-    elements.forEach((el) => observer.observe(el));
+    const observeAll = () => {
+      const elements = document.querySelectorAll('.scroll-reveal:not(.visible)');
+      elements.forEach((el) => observer.observe(el));
+    };
+
+    // Immediately mark elements already in viewport (e.g. hero block on mobile)
+    const markVisibleNow = () => {
+      const elements = document.querySelectorAll('.scroll-reveal');
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          el.classList.add('visible');
+        }
+      });
+    };
+
+    markVisibleNow();
+    observeAll();
+
+    // Second pass: catch dynamically rendered elements (e.g. combo cards loaded after products fetch)
+    const retryTimer = setTimeout(() => {
+      markVisibleNow();
+      observeAll();
+    }, 400);
 
     return () => {
-      elements.forEach((el) => observer.unobserve(el));
+      clearTimeout(retryTimer);
+      observer.disconnect();
     };
   }, [products, currentView, detailProductId, detailComboId]);
 

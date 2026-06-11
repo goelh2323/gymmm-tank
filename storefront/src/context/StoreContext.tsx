@@ -93,7 +93,7 @@ interface StoreContextType {
 
   // Orders
   placeOrder: (orderPayload: any) => Promise<Order | null>;
-  fetchAdminOrders: () => Promise<Order[]>;
+  fetchAdminOrders: (cursorId?: string) => Promise<{ orders: Order[]; nextCursor: string | null; hasNextPage: boolean }>;
   updateOrderStatus: (orderId: string, statusPayload: { fulfillment?: string; paymentStatus?: string }) => Promise<boolean>;
   fetchCustomerOrders: () => Promise<Order[]>;
   fetchAdminUsers: () => Promise<User[]>;
@@ -414,16 +414,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const fetchAdminOrders = async (): Promise<Order[]> => {
+  const fetchAdminOrders = async (cursorId?: string): Promise<{ orders: Order[]; nextCursor: string | null; hasNextPage: boolean }> => {
     try {
-      const res = await fetch(`${API_BASE}/admin/orders`, {
+      const params = new URLSearchParams({ limit: '15' });
+      if (cursorId) params.append('cursorId', cursorId);
+
+      const res = await fetch(`${API_BASE}/admin/orders?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to fetch admin orders');
-      return await res.json();
+      return await res.json(); // { orders, nextCursor, hasNextPage }
     } catch (err: any) {
       console.error(err.message);
-      return [];
+      return { orders: [], nextCursor: null, hasNextPage: false };
     }
   };
 

@@ -7,6 +7,9 @@ import { z } from 'zod';
 import prisma from './db';
 import { exec } from 'child_process';
 import path from 'path';
+import nodemailer from 'nodemailer';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +21,212 @@ const JWT_SECRET = process.env.JWT_SECRET || 'gymmm-tank-secret-key-9988';
 // Enable CORS and JSON body parser
 app.use(cors());
 app.use(express.json());
+
+// ----------------------------------------------------
+// Security: Helmet (HTTP headers) + Rate Limiting
+// ----------------------------------------------------
+app.use(helmet()); // Sets X-Frame-Options, X-Content-Type-Options, CSP, etc.
+
+// Rate limiter for login — max 10 attempts per 15 minutes per IP
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please try again after 15 minutes.' },
+});
+
+// Rate limiter for registration — max 5 per hour per IP
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many accounts created from this IP. Please try again after an hour.' },
+});
+
+// Rate limiter for placing orders — max 5 per 10 minutes per IP (prevents order flooding)
+const orderLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many orders submitted. Please wait a few minutes.' },
+});
+
+// General API rate limiter — max 120 requests per minute per IP
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please slow down.' },
+});
+
+// Apply general limiter to all /api/v1 routes
+app.use('/api/v1', apiLimiter);
+
+// ----------------------------------------------------
+// Email: Nodemailer transporter setup
+// Uses real SMTP if EMAIL_USER + EMAIL_PASS are set in .env
+// Falls back to Ethereal (fake test inbox) for development
+// ----------------------------------------------------
+let transporter: nodemailer.Transporter;
+let testEmailAccount: { user: string; pass: string } | null = null;
+
+const initEmailTransporter = async () => {
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    // Production: use real Gmail SMTP
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    console.log('📧 Email transporter ready (Gmail SMTP)');
+  } else {
+    // Development: auto-create Ethereal test account (emails captured at ethereal.email)
+    const testAccount = await nodemailer.createTestAccount();
+    testEmailAccount = { user: testAccount.user, pass: testAccount.pass };
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+    console.log('📧 Email transporter ready (Ethereal test mode)');
+    console.log(`   ↳ Test inbox: https://ethereal.email/messages (login: ${testAccount.user})`);
+  }
+};
+
+// Helper: format ₹ amounts
+const formatINR = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
+
+// Send order confirmation email to the customer
+const sendOrderConfirmationEmail = async (order: any) => {
+  if (!transporter) return;
+  try {
+    const itemsHtml = (order.items || [])
+      .map((item: any) => `
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">${item.productName}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#666;">${item.flavor} | ${item.size}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;">${item.quantity}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;">${formatINR(item.price * item.quantity)}</td>
+        </tr>`
+      ).join('');
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:linear-gradient(135deg,#0a0a0a,#1a1a2e);padding:32px;text-align:center;">
+          <h1 style="color:#d4af37;margin:0;font-size:28px;letter-spacing:2px;">GYMMM TANK</h1>
+          <p style="color:#888;margin:8px 0 0;font-size:12px;letter-spacing:3px;">ORDER CONFIRMED</p>
+        </div>
+        <div style="padding:32px;">
+          <h2 style="color:#1a1a2e;margin:0 0 8px;">Thank you, ${order.customerName}! 💪</h2>
+          <p style="color:#555;margin:0 0 24px;">Your order <strong>#${order.id.slice(0, 8).toUpperCase()}</strong> has been placed successfully and is being processed.</p>
+          
+          <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+            <thead>
+              <tr style="background:#f8f4e8;">
+                <th style="padding:10px 12px;text-align:left;font-size:12px;color:#333;">PRODUCT</th>
+                <th style="padding:10px 12px;text-align:left;font-size:12px;color:#333;">VARIANT</th>
+                <th style="padding:10px 12px;text-align:center;font-size:12px;color:#333;">QTY</th>
+                <th style="padding:10px 12px;text-align:right;font-size:12px;color:#333;">AMOUNT</th>
+              </tr>
+            </thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
+
+          <div style="background:#f8f9ff;border-left:4px solid #d4af37;padding:16px 20px;margin-bottom:24px;">
+            <table style="width:100%;">
+              <tr><td style="color:#555;padding:3px 0;">Subtotal</td><td style="text-align:right;color:#333;">${formatINR(order.subtotal)}</td></tr>
+              ${order.savings > 0 ? `<tr><td style="color:#22c55e;padding:3px 0;">Savings</td><td style="text-align:right;color:#22c55e;">-${formatINR(order.savings)}</td></tr>` : ''}
+              ${order.coinsRedeemed > 0 ? `<tr><td style="color:#d4af37;padding:3px 0;">Tank Coins Redeemed</td><td style="text-align:right;color:#d4af37;">-${order.coinsRedeemed} coins</td></tr>` : ''}
+              <tr><td style="font-weight:700;font-size:16px;padding:8px 0 0;color:#1a1a2e;">Total</td><td style="text-align:right;font-weight:700;font-size:16px;color:#d4af37;padding-top:8px;">${formatINR(order.total)}</td></tr>
+            </table>
+          </div>
+
+          <div style="background:#0a0a0a;color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+            <p style="margin:0 0 8px;font-size:12px;color:#d4af37;letter-spacing:2px;font-weight:700;">DELIVERY DETAILS</p>
+            <p style="margin:0;color:#ccc;font-size:14px;line-height:1.6;">${order.address}, ${order.city}, ${order.state} — ${order.pincode}</p>
+            <p style="margin:4px 0 0;color:#888;font-size:13px;">Payment: ${order.paymentMethod} · Status: <span style="color:#f59e0b;">${order.paymentStatus}</span></p>
+          </div>
+
+          ${order.coinsEarned > 0 ? `<p style="color:#d4af37;font-weight:600;">🏆 You earned <strong>${order.coinsEarned} Tank Coins</strong> on this order!</p>` : ''}
+          <p style="color:#888;font-size:13px;">Questions? Contact us at <a href="mailto:support@gymmmtank.com" style="color:#d4af37;">support@gymmmtank.com</a> or call 9350931316</p>
+        </div>
+        <div style="background:#0a0a0a;padding:16px;text-align:center;">
+          <p style="color:#555;font-size:11px;margin:0;">© ${new Date().getFullYear()} GYMMM TANK Supplements · Engineered for Mind, Muscle & Performance</p>
+        </div>
+      </div>`;
+
+    const info = await transporter.sendMail({
+      from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+      to: order.customerEmail,
+      subject: `✅ Order Confirmed #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      html,
+    });
+
+    if (!process.env.EMAIL_USER) {
+      // In dev/Ethereal mode, print the preview URL to console
+      console.log(`📧 Order confirmation email preview: ${nodemailer.getTestMessageUrl(info)}`);
+    }
+  } catch (err) {
+    console.error('Failed to send order confirmation email:', err);
+    // Non-fatal: don't let email failure break the order response
+  }
+};
+
+// Send shipment notification email
+const sendShipmentEmail = async (order: any) => {
+  if (!transporter) return;
+  try {
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+        <div style="background:linear-gradient(135deg,#0a0a0a,#1a1a2e);padding:32px;text-align:center;">
+          <h1 style="color:#d4af37;margin:0;font-size:28px;letter-spacing:2px;">GYMMM TANK</h1>
+          <p style="color:#888;margin:8px 0 0;font-size:12px;letter-spacing:3px;">YOUR ORDER IS ON ITS WAY!</p>
+        </div>
+        <div style="padding:32px;text-align:center;">
+          <div style="font-size:64px;margin-bottom:16px;">🚀</div>
+          <h2 style="color:#1a1a2e;margin:0 0 12px;">It's Shipped, ${order.customerName}!</h2>
+          <p style="color:#555;max-width:400px;margin:0 auto 24px;line-height:1.6;">
+            Your GYMMM TANK order <strong>#${order.id.slice(0, 8).toUpperCase()}</strong> has been dispatched and is on its way to you. Estimated delivery: <strong>3-5 business days</strong>.
+          </p>
+          <div style="background:#f8f4e8;border:2px solid #d4af37;border-radius:12px;padding:20px;display:inline-block;">
+            <p style="margin:0 0 4px;color:#888;font-size:12px;">DELIVERY ADDRESS</p>
+            <p style="margin:0;font-weight:600;color:#1a1a2e;">${order.address}, ${order.city}</p>
+            <p style="margin:2px 0 0;color:#555;">${order.state} — ${order.pincode}</p>
+          </div>
+          <p style="color:#888;margin:24px 0 0;font-size:13px;">Need help? <a href="mailto:support@gymmmtank.com" style="color:#d4af37;">support@gymmmtank.com</a> | 9350931316</p>
+        </div>
+        <div style="background:#0a0a0a;padding:16px;text-align:center;">
+          <p style="color:#555;font-size:11px;margin:0;">© ${new Date().getFullYear()} GYMMM TANK Supplements · Engineered for Mind, Muscle & Performance</p>
+        </div>
+      </div>`;
+
+    const info = await transporter.sendMail({
+      from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+      to: order.customerEmail,
+      subject: `🚀 Your Order is Shipped! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      html,
+    });
+
+    if (!process.env.EMAIL_USER) {
+      console.log(`📧 Shipment email preview: ${nodemailer.getTestMessageUrl(info)}`);
+    }
+  } catch (err) {
+    console.error('Failed to send shipment email:', err);
+  }
+};
+
+// Initialize email transporter on startup
+initEmailTransporter().catch(console.error);
 
 // Extend Express request interface to include decoded user details
 interface AuthRequest extends Request {
@@ -139,7 +348,7 @@ app.get('/api/v1', (req: Request, res: Response) => {
 // ----------------------------------------------------
 // 1. Auth Route: Login
 // ----------------------------------------------------
-app.post('/api/v1/auth/login', async (req: Request, res: Response) => {
+app.post('/api/v1/auth/login', loginLimiter, async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -186,7 +395,7 @@ app.post('/api/v1/auth/login', async (req: Request, res: Response) => {
 // ----------------------------------------------------
 // 1b. Customer Auth Routes (Register, Profile, Profile Update)
 // ----------------------------------------------------
-app.post('/api/v1/auth/register', async (req: Request, res: Response) => {
+app.post('/api/v1/auth/register', registerLimiter, async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
@@ -379,7 +588,7 @@ app.get('/api/v1/products/:id', async (req: Request, res: Response) => {
 // ----------------------------------------------------
 
 // Place an order
-app.post('/api/v1/orders', async (req: Request, res: Response) => {
+app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => {
   try {
     const parseResult = CheckoutSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -402,82 +611,81 @@ app.post('/api/v1/orders', async (req: Request, res: Response) => {
       }
     }
 
-    // Verify stock availability
+    // Verify stock availability BEFORE opening transaction (read-only checks)
     for (const item of orderData.items) {
-      // Exclude the FREE Shaker Bottle from database stock checks since it's a promotional item
       if (item.productId === 'free-shaker-bottle') continue;
-
       const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
       if (!dbProduct) {
         return res.status(404).json({ error: `Product ${item.productName} not found` });
       }
       if (dbProduct.stock < item.quantity) {
-        return res.status(400).json({ error: `Insufficient stock for product ${item.productName}. Available: ${dbProduct.stock}` });
+        return res.status(400).json({ error: `Insufficient stock for ${item.productName}. Available: ${dbProduct.stock}` });
       }
     }
 
-    // Deduct stock for actual inventory items
-    for (const item of orderData.items) {
-      if (item.productId === 'free-shaker-bottle') continue;
-
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: {
-            decrement: item.quantity
-          }
-        }
-      });
-    }
-
-    // Update loyalty points if logged in
-    if (userId) {
-      const dbUser = await prisma.user.findUnique({ where: { id: userId } });
-      if (dbUser) {
-        const newCoins = dbUser.coins - orderData.coinsRedeemed + orderData.coinsEarned;
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            coins: Math.max(0, newCoins)
-          }
+    // --- ATOMIC TRANSACTION: stock decrement + coin update + order creation ---
+    // If any step fails, ALL changes roll back — no orphaned state.
+    const createdOrder = await prisma.$transaction(async (tx) => {
+      // 1. Deduct stock for each real inventory item
+      for (const item of orderData.items) {
+        if (item.productId === 'free-shaker-bottle') continue;
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
         });
       }
-    }
 
-    // Save Order and OrderItems
-    const createdOrder = await prisma.order.create({
-      data: {
-        userId,
-        customerName: orderData.customerName,
-        customerEmail: orderData.customerEmail,
-        customerPhone: orderData.customerPhone,
-        address: orderData.address,
-        city: orderData.city,
-        state: orderData.state,
-        pincode: orderData.pincode,
-        paymentMethod: orderData.paymentMethod,
-        paymentStatus: orderData.paymentStatus,
-        subtotal: orderData.subtotal,
-        savings: orderData.savings,
-        total: orderData.total,
-        promoCode: orderData.promoCode || null,
-        coinsRedeemed: orderData.coinsRedeemed,
-        coinsEarned: orderData.coinsEarned,
-        items: {
-          create: orderData.items.map(item => ({
-            productId: item.productId,
-            productName: item.productName,
-            flavor: item.flavor,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-          }))
+      // 2. Update loyalty coins if the customer is logged in
+      if (userId) {
+        const dbUser = await tx.user.findUnique({ where: { id: userId } });
+        if (dbUser) {
+          const newCoins = dbUser.coins - orderData.coinsRedeemed + orderData.coinsEarned;
+          await tx.user.update({
+            where: { id: userId },
+            data: { coins: Math.max(0, newCoins) },
+          });
         }
-      },
-      include: {
-        items: true
       }
+
+      // 3. Create the order + all line items together
+      const order = await tx.order.create({
+        data: {
+          userId,
+          customerName: orderData.customerName,
+          customerEmail: orderData.customerEmail,
+          customerPhone: orderData.customerPhone,
+          address: orderData.address,
+          city: orderData.city,
+          state: orderData.state,
+          pincode: orderData.pincode,
+          paymentMethod: orderData.paymentMethod,
+          paymentStatus: orderData.paymentStatus,
+          subtotal: orderData.subtotal,
+          savings: orderData.savings,
+          total: orderData.total,
+          promoCode: orderData.promoCode || null,
+          coinsRedeemed: orderData.coinsRedeemed,
+          coinsEarned: orderData.coinsEarned,
+          items: {
+            create: orderData.items.map(item => ({
+              productId: item.productId,
+              productName: item.productName,
+              flavor: item.flavor,
+              size: item.size,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
+        },
+        include: { items: true },
+      });
+
+      return order;
     });
+    // --- END TRANSACTION ---
+
+    // Send order confirmation email (fire-and-forget — non-blocking)
+    sendOrderConfirmationEmail(createdOrder).catch(() => {});
 
     res.status(201).json({
       message: 'Order placed successfully',
@@ -591,18 +799,29 @@ app.delete('/api/v1/admin/products/:id', authenticateAdmin, async (req: AuthRequ
   }
 });
 
-// Fetch all orders (Admin only)
+// Fetch all orders with cursor-based pagination (Admin only)
+// Usage: GET /api/v1/admin/orders?limit=15&cursorId=<lastOrderId>
 app.get('/api/v1/admin/orders', authenticateAdmin, async (req: AuthRequest, res: Response) => {
   try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 15, 50); // max 50 per page
+    const cursorId = req.query.cursorId as string | undefined;
+
     const orders = await prisma.order.findMany({
-      include: {
-        items: true
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      take: limit + 1, // Fetch one extra to determine if there is a next page
+      ...(cursorId ? { skip: 1, cursor: { id: cursorId } } : {}),
+      include: { items: true },
+      orderBy: { createdAt: 'desc' },
     });
-    res.json(orders);
+
+    const hasNextPage = orders.length > limit;
+    const pageOrders = hasNextPage ? orders.slice(0, limit) : orders;
+    const nextCursor = hasNextPage ? pageOrders[pageOrders.length - 1].id : null;
+
+    res.json({
+      orders: pageOrders,
+      nextCursor,
+      hasNextPage,
+    });
   } catch (error) {
     console.error('Fetch admin orders error:', error);
     res.status(500).json({ error: 'Could not fetch orders' });
@@ -669,10 +888,13 @@ app.put('/api/v1/admin/orders/:id/status', authenticateAdmin, async (req: AuthRe
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: updateData,
-      include: {
-        items: true
-      }
+      include: { items: true },
     });
+
+    // Send shipment email when admin marks order as SHIPPED (fire-and-forget)
+    if (fulfillment === 'SHIPPED' && existingOrder.fulfillment !== 'SHIPPED') {
+      sendShipmentEmail(updatedOrder).catch(() => {});
+    }
 
     res.json({
       message: 'Order status updated successfully',
