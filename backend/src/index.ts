@@ -179,6 +179,7 @@ const sendOrderConfirmationEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid #d4af37;">
+            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
             <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
               <span style="color: #d4af37;">GYMMM</span> TANK
             </h1>
@@ -298,6 +299,7 @@ const sendShipmentEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
+            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
             <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
               <span style="color: #d4af37;">GYMMM</span> TANK
             </h1>
