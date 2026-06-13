@@ -97,6 +97,8 @@ interface StoreContextType {
   updateOrderStatus: (orderId: string, statusPayload: { fulfillment?: string; paymentStatus?: string }) => Promise<boolean>;
   fetchCustomerOrders: () => Promise<Order[]>;
   fetchAdminUsers: () => Promise<User[]>;
+  completedOrder: Order | null;
+  setCompletedOrder: (order: Order | null) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -125,6 +127,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [customerUser, setCustomerUser] = useState<User | null>(
     localStorage.getItem('customerUser') ? JSON.parse(localStorage.getItem('customerUser')!) : null
   );
+
+  // Completed Order state (for checkout receipt modal)
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -512,6 +517,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateOrderStatus,
         fetchCustomerOrders,
         fetchAdminUsers,
+        completedOrder,
+        setCompletedOrder,
       }}
     >
       {children}

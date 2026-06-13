@@ -8,6 +8,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { AdminPanel } from './components/AdminPanel';
 import { AuthModal } from './components/AuthModal';
 import { ProductDetailView } from './components/ProductDetailView';
+import { OrderReceiptModal } from './components/OrderReceiptModal';
 import {
   Dumbbell,
   RotateCcw,
@@ -1121,7 +1122,7 @@ const getSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 const LayoutWrapper: React.FC = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { products, tankMode, search } = useStore();
+  const { products, tankMode, search, completedOrder, setCompletedOrder } = useStore();
 
   // Sync state with browser back/forward navigation
   useEffect(() => {
@@ -1269,6 +1270,14 @@ const LayoutWrapper: React.FC = () => {
 
       {/* Sliding Cart Drawer Overlay */}
       <CartDrawer />
+
+      {/* Order Completion Receipt Modal */}
+      {completedOrder && (
+        <OrderReceiptModal 
+          order={completedOrder} 
+          onClose={() => setCompletedOrder(null)} 
+        />
+      )}
 
       {/* Customer Account Authentication Modal */}
       <AuthModal 
