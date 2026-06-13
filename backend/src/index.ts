@@ -83,15 +83,33 @@ const initEmailTransporter = async () => {
   }
 
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    // Production: use real Gmail SMTP
+    // Production: use explicit Gmail SMTP settings (more reliable than service:'gmail' shorthand on cloud servers)
     transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // SSL
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
-    console.log('📧 Email transporter ready (Gmail SMTP)');
+
+    // Verify SMTP connection on startup — logs exact error to Render logs
+    transporter.verify((error: Error | null) => {
+      if (error) {
+        console.error('❌ Gmail SMTP connection FAILED:', error.message);
+        console.error('   Check EMAIL_USER and EMAIL_PASS are set correctly in Render environment variables.');
+        console.error('   EMAIL_PASS must be a Gmail App Password (16-char), NOT your regular Gmail password.');
+        console.error('   Generate one at: Google Account → Security → 2-Step Verification → App Passwords');
+      } else {
+        console.log(`✅ Gmail SMTP connected successfully (${process.env.EMAIL_USER})`);
+      }
+    });
+
+    console.log(`📧 Email transporter initialised (Gmail SMTP as ${process.env.EMAIL_USER})`);
   } else {
     // Development: auto-create Ethereal test account (emails captured at ethereal.email)
     const testAccount = await nodemailer.createTestAccount();
@@ -142,17 +160,27 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
       throw err;
     }
   } else if (transporter) {
-    const info = await transporter.sendMail({
-      from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
-      to,
-      subject,
-      html,
-    });
+    try {
+      console.log(`📧 Attempting Gmail SMTP send → to: ${to}, subject: ${subject}`);
+      const info = await transporter.sendMail({
+        from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+        to,
+        subject,
+        html,
+      });
 
-    if (!process.env.EMAIL_USER) {
-      console.log(`📧 SMTP Email preview: ${nodemailer.getTestMessageUrl(info)}`);
+      if (!process.env.EMAIL_USER) {
+        console.log(`📧 SMTP Email preview: ${nodemailer.getTestMessageUrl(info)}`);
+      } else {
+        console.log(`✅ Gmail SMTP: Email sent to ${to} — MessageId: ${info.messageId}`);
+      }
+      return info;
+    } catch (err: any) {
+      console.error(`❌ Gmail SMTP FAILED sending to ${to}:`);
+      console.error(`   Code: ${err.code} | Response: ${err.response}`);
+      console.error(`   Full error: ${err.message}`);
+      throw err;
     }
-    return info;
   } else {
     throw new Error('No email sender is configured (missing RESEND_API_KEY or EMAIL_USER/EMAIL_PASS)');
   }
