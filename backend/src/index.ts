@@ -76,18 +76,42 @@ let transporter: nodemailer.Transporter;
 let testEmailAccount: { user: string; pass: string } | null = null;
 
 const initEmailTransporter = async () => {
-  // If RESEND_API_KEY is defined, we skip Nodemailer SMTP initialization (use Resend HTTP API)
+  // Priority 1: Resend HTTP API (if RESEND_API_KEY is set)
   if (process.env.RESEND_API_KEY) {
     console.log('📧 Email system ready (Resend HTTP API)');
     return;
   }
 
+  // Priority 2: Brevo (Sendinblue) SMTP — works from any cloud server, no domain needed, 300/day free
+  if (process.env.BREVO_SMTP_USER && process.env.BREVO_SMTP_KEY) {
+    transporter = nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.BREVO_SMTP_USER,  // your Brevo login email
+        pass: process.env.BREVO_SMTP_KEY,   // Brevo SMTP key (from Settings → SMTP & API)
+      },
+    });
+
+    transporter.verify((error: Error | null) => {
+      if (error) {
+        console.error('❌ Brevo SMTP connection FAILED:', error.message);
+      } else {
+        console.log(`✅ Brevo SMTP connected successfully (${process.env.BREVO_SMTP_USER})`);
+      }
+    });
+
+    console.log(`📧 Email transporter initialised (Brevo SMTP)`);
+    return;
+  }
+
+  // Priority 3: Gmail SMTP (can be unreliable from cloud IPs)
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    // Production: use explicit Gmail SMTP settings (more reliable than service:'gmail' shorthand on cloud servers)
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
-      secure: true, // SSL
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -97,12 +121,10 @@ const initEmailTransporter = async () => {
       },
     });
 
-    // Verify SMTP connection on startup — logs exact error to Render logs
     transporter.verify((error: Error | null) => {
       if (error) {
         console.error('❌ Gmail SMTP connection FAILED:', error.message);
-        console.error('   Check EMAIL_USER and EMAIL_PASS are set correctly in Render environment variables.');
-        console.error('   EMAIL_PASS must be a Gmail App Password (16-char), NOT your regular Gmail password.');
+        console.error('   EMAIL_PASS must be a Gmail App Password (16-char), NOT your regular password.');
         console.error('   Generate one at: Google Account → Security → 2-Step Verification → App Passwords');
       } else {
         console.log(`✅ Gmail SMTP connected successfully (${process.env.EMAIL_USER})`);
@@ -110,22 +132,23 @@ const initEmailTransporter = async () => {
     });
 
     console.log(`📧 Email transporter initialised (Gmail SMTP as ${process.env.EMAIL_USER})`);
-  } else {
-    // Development: auto-create Ethereal test account (emails captured at ethereal.email)
-    const testAccount = await nodemailer.createTestAccount();
-    testEmailAccount = { user: testAccount.user, pass: testAccount.pass };
-    transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-    console.log('📧 Email transporter ready (Ethereal test mode)');
-    console.log(`   ↳ Test inbox: https://ethereal.email/messages (login: ${testAccount.user})`);
+    return;
   }
+
+  // Priority 4: Dev — auto-create Ethereal test account
+  const testAccount = await nodemailer.createTestAccount();
+  testEmailAccount = { user: testAccount.user, pass: testAccount.pass };
+  transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+  console.log('📧 Email transporter ready (Ethereal test mode)');
+  console.log(`   ↳ Test inbox: https://ethereal.email/messages (login: ${testAccount.user})`);
 };
 
 // Centralized Email Sender Helper (handles both Resend HTTP API and Nodemailer fallback)
@@ -161,28 +184,35 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
     }
   } else if (transporter) {
     try {
-      console.log(`📧 Attempting Gmail SMTP send → to: ${to}, subject: ${subject}`);
+      // Determine which sender address to use: Brevo, Gmail, or dev Ethereal
+      const senderEmail = process.env.BREVO_SMTP_USER
+        || process.env.EMAIL_USER
+        || testEmailAccount?.user
+        || 'noreply@gymmmtank.com';
+      const driver = process.env.BREVO_SMTP_USER ? 'Brevo' : process.env.EMAIL_USER ? 'Gmail' : 'Ethereal';
+
+      console.log(`📧 [${driver}] Sending to: ${to}`);
       const info = await transporter.sendMail({
-        from: `"GYMMM TANK" <${process.env.EMAIL_USER || testEmailAccount?.user || 'noreply@gymmmtank.com'}>`,
+        from: `"GYMMM TANK" <${senderEmail}>`,
         to,
         subject,
         html,
       });
 
-      if (!process.env.EMAIL_USER) {
-        console.log(`📧 SMTP Email preview: ${nodemailer.getTestMessageUrl(info)}`);
+      if (!process.env.EMAIL_USER && !process.env.BREVO_SMTP_USER) {
+        console.log(`📧 Ethereal preview: ${nodemailer.getTestMessageUrl(info)}`);
       } else {
-        console.log(`✅ Gmail SMTP: Email sent to ${to} — MessageId: ${info.messageId}`);
+        console.log(`✅ [${driver}] Email sent to ${to} — MessageId: ${info.messageId}`);
       }
       return info;
     } catch (err: any) {
-      console.error(`❌ Gmail SMTP FAILED sending to ${to}:`);
+      console.error(`❌ SMTP send FAILED to ${to}:`);
       console.error(`   Code: ${err.code} | Response: ${err.response}`);
       console.error(`   Full error: ${err.message}`);
       throw err;
     }
   } else {
-    throw new Error('No email sender is configured (missing RESEND_API_KEY or EMAIL_USER/EMAIL_PASS)');
+    throw new Error('No email sender configured. Set BREVO_SMTP_USER+BREVO_SMTP_KEY or EMAIL_USER+EMAIL_PASS in environment variables.');
   }
 };
 
