@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useStore } from '../context/StoreContext';
-import type { Order } from '../context/StoreContext';
 import {
   X,
   Plus,
   Minus,
   Trash2,
   ShoppingBag,
-  CheckCircle,
   Truck,
   CreditCard,
   QrCode,
@@ -31,14 +29,14 @@ export const CartDrawer: React.FC = () => {
     clearCart,
   } = useCart();
 
-  const { customerUser, placeOrder } = useStore();
+  const { customerUser, placeOrder, setCompletedOrder } = useStore();
 
   const formatPrice = (num: number) => {
     return '₹' + Math.round(num).toLocaleString('en-IN');
   };
 
-  // Checkout Steps State: 1 = Review, 2 = Shipping, 3 = Payment, 4 = Receipt
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  // Checkout Steps State: 1 = Review, 2 = Shipping, 3 = Payment
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Promo Code States
   const [promoInput, setPromoInput] = useState('');
@@ -72,18 +70,10 @@ export const CartDrawer: React.FC = () => {
   // Timed UPI States
   const [upiTimer, setUpiTimer] = useState(180); // 3 minutes
 
-  // Completed Order State
-  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
-
-  // Reset steps & inputs when drawer opens/closes, and lock body scroll
+  // Lock body scroll when drawer is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      if (completedOrder) {
-        setStep(4);
-      } else {
-        setStep(1);
-      }
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -91,7 +81,15 @@ export const CartDrawer: React.FC = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, completedOrder]);
+  }, [isOpen]);
+
+  // Reset steps & inputs when drawer transitions to open
+  useEffect(() => {
+    if (isOpen) {
+      setStep(1);
+    }
+  }, [isOpen]);
+
 
   // Prefill shipping details if customer is logged in
   useEffect(() => {
@@ -116,7 +114,7 @@ export const CartDrawer: React.FC = () => {
     return () => clearInterval(interval);
   }, [step, paymentMethod, upiTimer]);
 
-  if (!isOpen && step !== 4) return null;
+  if (!isOpen) return null;
 
   // Pricing calculations
   const subtotal = totalPrice;
@@ -243,7 +241,8 @@ export const CartDrawer: React.FC = () => {
       if (orderResult) {
         setCompletedOrder(orderResult);
         clearCart();
-        setStep(4);
+        setIsOpen(false); // Close the side drawer so the user sees the center invoice modal
+        setStep(1);
       }
     } catch (err) {
       console.error('Error placing order:', err);
@@ -254,7 +253,6 @@ export const CartDrawer: React.FC = () => {
 
   const handleCloseCheckout = () => {
     setIsOpen(false);
-    setCompletedOrder(null);
     setStep(1);
     setActivePromo(null);
     setPromoSuccess(null);
@@ -828,158 +826,6 @@ export const CartDrawer: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* STEP 4: ORDER INVOICE MODAL */}
-      {step === 4 && completedOrder && (
-        <div className="modal-overlay" onClick={handleCloseCheckout}>
-          <div className="modal-content invoice-container scroll-reveal visible animate-scale-up" onClick={(e) => e.stopPropagation()}>
-            
-            {/* Header Stamp */}
-            <div className="invoice-success-icon-wrap">
-              <CheckCircle size={52} className="invoice-success-icon text-gold animate-pulse" />
-            </div>
-            
-            <h2 className="invoice-title">GYMMM TANK RECEIPTS</h2>
-            <p className="invoice-subtitle">DECLARED ANABOLIC TRANSACTION LOG</p>
-
-            <div className="invoice-divider"></div>
-
-            {/* Order Details Grid */}
-            <div className="invoice-details-grid">
-              <div className="invoice-row">
-                <span className="text-muted">ORDER ID:</span>
-                <span className="font-bold text-gold">{completedOrder.id}</span>
-              </div>
-              <div className="invoice-row">
-                <span className="text-muted">DATE & TIME:</span>
-                <span>{new Date(completedOrder.createdAt).toLocaleString()}</span>
-              </div>
-              <div className="invoice-row">
-                <span className="text-muted">PAYMENT METHOD:</span>
-                <span className="font-bold">{completedOrder.paymentMethod} ({completedOrder.paymentStatus})</span>
-              </div>
-              <div className="invoice-row">
-                <span className="text-muted">FULFILLMENT STATUS:</span>
-                <span className="admin-table-badge badge-new" style={{ textTransform: 'uppercase' }}>
-                  {completedOrder.fulfillment}
-                </span>
-              </div>
-            </div>
-
-            <div className="invoice-divider"></div>
-
-            {/* Delivery address details */}
-            <div className="invoice-address-block">
-              <h4>DELIVERY DESTINATION</h4>
-              <div className="address-lines">
-                <div><strong>{completedOrder.customerName}</strong></div>
-                <div>{completedOrder.address}</div>
-                <div>{completedOrder.city}, {completedOrder.state} - {completedOrder.pincode}</div>
-                <div>Phone: {completedOrder.customerPhone}</div>
-              </div>
-            </div>
-
-            <div className="invoice-divider"></div>
-
-            {/* Items Summary Table */}
-            <div className="invoice-items">
-              <h4>CONSOLIDATED ORDER ITEMS</h4>
-              <div className="invoice-items-list-wrap">
-                {completedOrder.items.map((item) => (
-                  <div className="invoice-item-row" key={item.id}>
-                    <div className="invoice-item-left">
-                      <span className="invoice-item-name">{item.productName}</span>
-                      <span className="invoice-item-qty">x{item.quantity}</span>
-                      <div className="text-muted invoice-item-flavor">
-                        {item.flavor} | {item.size}
-                      </div>
-                    </div>
-                    <span className="invoice-item-price-col">{formatPrice(item.price * item.quantity)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="invoice-divider"></div>
-
-            {/* Invoice Totals */}
-            <div className="invoice-details">
-              <div className="invoice-row">
-                <span className="text-muted">Subtotal:</span>
-                <span>{formatPrice(completedOrder.subtotal)}</span>
-              </div>
-              {completedOrder.savings > 0 && (
-                <div className="invoice-row text-gold" style={{ color: 'var(--gold-primary)' }}>
-                  <span>Total Savings Applied:</span>
-                  <span>-{formatPrice(completedOrder.savings)}</span>
-                </div>
-              )}
-              {completedOrder.coinsRedeemed > 0 && (
-                <div className="invoice-row text-gold">
-                  <span>Coins Redeemed:</span>
-                  <span>-{completedOrder.coinsRedeemed} coins</span>
-                </div>
-              )}
-              <div className="invoice-total-row">
-                <span>Total Amount Charged:</span>
-                <span className="text-gold font-bold">{formatPrice(completedOrder.total)}</span>
-              </div>
-              
-              {completedOrder.coinsEarned > 0 && (
-                <div className="invoice-coins-earned-box">
-                  🔥 <strong>+{completedOrder.coinsEarned}</strong> Loyalty Coins accrued to your profile.
-                </div>
-              )}
-            </div>
-
-            <div className="invoice-divider"></div>
-
-            {/* Print Barcode Simulation */}
-            <div className="invoice-barcode-wrapper">
-              <svg className="barcode-svg" viewBox="0 0 100 20" width="100%" height="40">
-                <rect width="100" height="20" fill="none" />
-                {/* Simulated Barcode Lines */}
-                <rect x="2" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="5" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="7" y="2" width="3" height="16" fill="#ffffff" />
-                <rect x="11" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="13" y="2" width="4" height="16" fill="#ffffff" />
-                <rect x="18" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="21" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="23" y="2" width="3" height="16" fill="#ffffff" />
-                <rect x="27" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="30" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="32" y="2" width="4" height="16" fill="#ffffff" />
-                <rect x="37" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="39" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="42" y="2" width="3" height="16" fill="#ffffff" />
-                <rect x="46" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="48" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="51" y="2" width="4" height="16" fill="#ffffff" />
-                <rect x="56" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="59" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="61" y="2" width="3" height="16" fill="#ffffff" />
-                <rect x="65" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="68" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="70" y="2" width="4" height="16" fill="#ffffff" />
-                <rect x="75" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="77" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="80" y="2" width="3" height="16" fill="#ffffff" />
-                <rect x="84" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="86" y="2" width="4" height="16" fill="#ffffff" />
-                <rect x="91" y="2" width="2" height="16" fill="#ffffff" />
-                <rect x="94" y="2" width="1" height="16" fill="#ffffff" />
-                <rect x="96" y="2" width="3" height="16" fill="#ffffff" />
-              </svg>
-              <span className="barcode-number">GT-{completedOrder.id.substring(0, 8).toUpperCase()}</span>
-            </div>
-
-            <button className="invoice-close-btn" onClick={handleCloseCheckout}>
-              Close & Print Invoice
-            </button>
           </div>
         </div>
       )}

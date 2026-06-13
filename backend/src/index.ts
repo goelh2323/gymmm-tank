@@ -293,6 +293,7 @@ const sendOrderConfirmationEmail = async (order: any) => {
 // Send shipment notification email
 const sendShipmentEmail = async (order: any) => {
   try {
+    console.log(`📧 Dispatching Shipment Email for Order #${order.id} to ${order.customerEmail}...`);
     const html = `
       <div style="background-color: #030303; padding: 40px 20px; font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; min-height: 100%;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #0c0c0c; border: 1px solid #221c0e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center;">
@@ -351,19 +352,21 @@ const sendShipmentEmail = async (order: any) => {
         </div>
       </div>`;
 
-    await sendEmail({
+    const result = await sendEmail({
       to: order.customerEmail,
       subject: `🚀 Your Order is Shipped! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
       html,
     });
-  } catch (err) {
-    console.error('Failed to send shipment email:', err);
+    console.log(`📧 Shipment Email sent successfully for Order #${order.id}. Message ID: ${result?.messageId || result?.id}`);
+  } catch (err: any) {
+    console.error(`❌ Failed to send shipment email for Order #${order.id}:`, err.message);
   }
 };
 
 // Send delivery confirmation email
 const sendDeliveryEmail = async (order: any) => {
   try {
+    console.log(`📧 Dispatching Delivery Email for Order #${order.id} to ${order.customerEmail}...`);
     const itemsHtml = (order.items || [])
       .map((item: any) => `
         <tr style="border-bottom: 1px solid #221c0e;">
@@ -439,13 +442,93 @@ const sendDeliveryEmail = async (order: any) => {
         </div>
       </div>`;
 
-    await sendEmail({
+    const result = await sendEmail({
       to: order.customerEmail,
       subject: `📦 Your Order is Delivered! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
       html,
     });
-  } catch (err) {
-    console.error('Failed to send delivery email:', err);
+    console.log(`📧 Delivery Email sent successfully for Order #${order.id}. Message ID: ${result?.messageId || result?.id}`);
+  } catch (err: any) {
+    console.error(`❌ Failed to send delivery email for Order #${order.id}:`, err.message);
+  }
+};
+
+// Send order cancellation email
+const sendCancellationEmail = async (order: any) => {
+  try {
+    console.log(`📧 Dispatching Cancellation Email for Order #${order.id} to ${order.customerEmail}...`);
+    const itemsHtml = (order.items || [])
+      .map((item: any) => `
+        <tr style="border-bottom: 1px solid #221c0e;">
+          <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #ffffff; font-family: 'Montserrat', sans-serif;">${item.productName}</td>
+          <td style="padding: 12px; font-size: 12px; color: #aaaaaa; font-family: 'Montserrat', sans-serif;">${item.flavor} · ${item.size}</td>
+          <td style="padding: 12px; font-size: 13px; color: #ffffff; text-align: center; font-family: 'Montserrat', sans-serif;">${item.quantity}</td>
+          <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #d4af37; text-align: right; font-family: 'Montserrat', sans-serif;">${formatINR(item.price * item.quantity)}</td>
+        </tr>`
+      ).join('');
+
+    const html = `
+      <div style="background-color: #030303; padding: 40px 20px; font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; min-height: 100%;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #0c0c0c; border: 1px solid #221c0e; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.8); text-align: center;">
+          
+          <!-- Branding Header -->
+          <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #ef4444;">
+            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #ef4444; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
+              <span style="color: #ef4444;">GYMMM</span> TANK
+            </h1>
+            <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
+          </div>
+
+          <!-- Main Content -->
+          <div style="padding: 40px 32px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+            <h2 style="color: #ef4444; margin: 0 0 16px; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">
+              Order Cancelled
+            </h2>
+            <p style="color: #cccccc; margin: 0 auto 28px; font-size: 14px; line-height: 1.6; max-width: 460px;">
+              Hey <strong>${order.customerName}</strong>, your GYMMM TANK order <strong style="color: #ef4444;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been cancelled. Any loyalty points used or earned on this transaction have been adjusted.
+            </p>
+
+            <!-- Items Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px; text-align: left;">
+              <thead>
+                <tr style="background-color: #121212; border-bottom: 2px solid #ef4444;">
+                  <th style="padding: 12px; font-size: 11px; color: #ef4444; text-transform: uppercase; letter-spacing: 1px;">PRODUCT</th>
+                  <th style="padding: 12px; font-size: 11px; color: #ef4444; text-transform: uppercase; letter-spacing: 1px;">VARIANT</th>
+                  <th style="padding: 12px; text-align: center; font-size: 11px; color: #ef4444; text-transform: uppercase; letter-spacing: 1px;">QTY</th>
+                  <th style="padding: 12px; text-align: right; font-size: 11px; color: #ef4444; text-transform: uppercase; letter-spacing: 1px;">AMOUNT</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0;">
+              If you have any questions or require assistance, please contact support at <a href="mailto:support@gymmmtank.com" style="color: #ef4444; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+            </p>
+
+          </div>
+
+          <!-- Footer Banner -->
+          <div style="background-color: #080808; padding: 24px 32px; border-top: 1px solid #1a1a1a;">
+            <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+            </p>
+          </div>
+
+        </div>
+      </div>`;
+
+    const result = await sendEmail({
+      to: order.customerEmail,
+      subject: `❌ Order Cancelled #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      html,
+    });
+    console.log(`📧 Cancellation Email sent successfully for Order #${order.id}. Message ID: ${result?.messageId || result?.id}`);
+  } catch (err: any) {
+    console.error(`❌ Failed to send cancellation email for Order #${order.id}:`, err.message);
   }
 };
 
@@ -1123,6 +1206,11 @@ app.put('/api/v1/admin/orders/:id/status', authenticateAdmin, async (req: AuthRe
     // Send delivery email when admin marks order as DELIVERED (fire-and-forget)
     if (fulfillment === 'DELIVERED' && existingOrder.fulfillment !== 'DELIVERED') {
       sendDeliveryEmail(updatedOrder).catch(() => {});
+    }
+
+    // Send cancellation email when admin marks order as CANCELLED (fire-and-forget)
+    if (fulfillment === 'CANCELLED' && existingOrder.fulfillment !== 'CANCELLED') {
+      sendCancellationEmail(updatedOrder).catch(() => {});
     }
 
     res.json({

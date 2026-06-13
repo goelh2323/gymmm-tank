@@ -14,8 +14,185 @@ import {
   X,
   TrendingUp,
   BarChart2,
-  CheckCircle
+  CheckCircle,
+  Printer
 } from 'lucide-react';
+
+interface LabelPreset {
+  id: string;
+  name: string;
+  width: number; // in mm
+  height: number; // in mm
+  tagline: string;
+  flavor: string;
+  netWt: string;
+  mfgBy: string;
+  directions: string;
+  warnings: string;
+  storage: string;
+  keyFeatures: string[];
+  nutrients: { name: string; amount: string; dv: string }[];
+}
+
+const labelPresets: LabelPreset[] = [
+  {
+    id: 'double-shot-pre-workout',
+    name: 'DOUBLE SHOT PRE-WORKOUT',
+    width: 280,
+    height: 130,
+    tagline: 'EXPLOSIVE PUMP & INSTANT PERFORMANCE SHOT',
+    flavor: 'SOUR WATERMELON',
+    netWt: '300G (30 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 1 scoop (10g) in 250ml of cold water. Shake vigorously in a shaker for 20-30 seconds. Consume 15-30 minutes prior to intense workout sessions. Do not exceed 1 serving in any 24-hour period.',
+    warnings: 'WARNING: Contains high caffeine (300mg/serving). Not recommended for children, pregnant or nursing women, or anyone sensitive to caffeine. Avoid taking with other stimulants. Consult your doctor before use.',
+    storage: 'Store in a cool, dry place away from direct sunlight. Close lid tightly after every use. Mild clumping may occur due to hygroscopic ingredients (like Citrulline), which is normal and does not impact product quality.',
+    keyFeatures: ['CLINICALLY DOSED L-CITRULLINE', 'EXPLOSIVE BETA-ALANINE RUNS', 'COGNITIVE FOCUS & VOLTAGE CAFFEINE'],
+    nutrients: [
+      { name: 'Calories', amount: '0 kcal', dv: '0%' },
+      { name: 'Total Carbohydrates', amount: '0 g', dv: '0%' },
+      { name: 'L-Citrulline Malate (2:1)', amount: '6000 mg', dv: '*' },
+      { name: 'Beta-Alanine', amount: '3200 mg', dv: '*' },
+      { name: 'Taurine', amount: '1000 mg', dv: '*' },
+      { name: 'Caffeine Anhydrous', amount: '300 mg', dv: '*' },
+      { name: 'Vitamin B12 (as Cyanocobalamin)', amount: '2.4 mcg', dv: '100%' }
+    ]
+  },
+  {
+    id: 'hyper-shot-pre-workout',
+    name: 'HYPER SHOT PRE-WORKOUT',
+    width: 280,
+    height: 130,
+    tagline: 'ANABOLIC VOLTAGE OVERLOAD & EXTREME STIM FLOW',
+    flavor: 'FRUIT PUNCH',
+    netWt: '300G (30 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 1 scoop (10g) in 250-300ml of cold water. Shake well for 30 seconds. Drink 20-30 minutes before heavy lifting. Assess tolerance with a half scoop first.',
+    warnings: 'EXTREME CAUTION: Extremely potent formula. Contains 400mg Caffeine. Do not consume if you suffer from heart conditions, high blood pressure, or thyroid disorders. Discontinue use immediately if nausea or tremors occur.',
+    storage: 'Store below 25°C in a dry place. Keep container tightly sealed. Keep away from heat and moisture.',
+    keyFeatures: ['ULTRA STIM CAFFEINE BLEND', 'VASCULAR PUMPS L-ARGININE', 'MIND-MUSCLE SYNERGY L-TYROSINE'],
+    nutrients: [
+      { name: 'Calories', amount: '5 kcal', dv: '<1%' },
+      { name: 'Total Carbohydrates', amount: '1 g', dv: '<1%' },
+      { name: 'Beta-Alanine', amount: '3200 mg', dv: '*' },
+      { name: 'L-Arginine Alpha-Ketoglutarate', amount: '3000 mg', dv: '*' },
+      { name: 'L-Tyrosine', amount: '1000 mg', dv: '*' },
+      { name: 'Caffeine Anhydrous', amount: '400 mg', dv: '*' },
+      { name: 'Vitamin B6 (as Pyridoxine HCl)', amount: '2 mg', dv: '118%' }
+    ]
+  },
+  {
+    id: 'citrulline-250g',
+    name: 'PURE CITRULLINE MALATE',
+    width: 280,
+    height: 130,
+    tagline: '100% PURE PHARMACEUTICAL GRADE VASODILATION PUMP',
+    flavor: 'UNFLAVORED',
+    netWt: '250G (125 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 1 scoop (2g) in water, juice, or pre-workout shake. Consume twice daily, or 30 minutes prior to physical activity. Can be stacked with Creatine or BCAAs.',
+    warnings: 'Consult a healthcare professional prior to use if you have a medical condition, or are taking nitrates or heart medications. Keep out of reach of children.',
+    storage: 'Store in a cool, dry place. Replace cap immediately after use. Highly moisture sensitive.',
+    keyFeatures: ['MAXIMUM NITRIC OXIDE BOOSTER', 'INCREASES MUSCULAR ENDURANCE', 'PROMOTES ULTRA DEEP PUMP'],
+    nutrients: [
+      { name: 'Calories', amount: '0 kcal', dv: '0%' },
+      { name: 'L-Citrulline Malate (2:1)', amount: '2000 mg', dv: '*' }
+    ]
+  },
+  {
+    id: 'eaa-hydration',
+    name: 'EAA + HYDRATION',
+    width: 280,
+    height: 130,
+    tagline: 'INTRA-WORKOUT ESSENTIAL AMINO ACIDS & ELECTROLYTES',
+    flavor: 'PINEAPPLE RUSH',
+    netWt: '300G (30 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 1 scoop (10g) in 300-400ml cold water. Sip throughout your workout or throughout the day on non-training days to support continuous protein synthesis.',
+    warnings: 'For adult use only. Consult physician if pregnant, nursing, taking medication, or have a medical condition. Do not exceed recommended dosage.',
+    storage: 'Store in cool, dry conditions. Close lid tightly to keep moisture out and prevent clumping.',
+    keyFeatures: ['ALL 9 ESSENTIAL AMINO ACIDS', 'COCONUT WATER HYDRATION FUEL', 'CRITICAL MUSCLE REPAIR & RECOVERY'],
+    nutrients: [
+      { name: 'Calories', amount: '10 kcal', dv: '<1%' },
+      { name: 'Total Carbohydrates', amount: '1 g', dv: '<1%' },
+      { name: 'L-Leucine (BCAA)', amount: '3000 mg', dv: '*' },
+      { name: 'L-Isoleucine (BCAA)', amount: '1500 mg', dv: '*' },
+      { name: 'L-Valine (BCAA)', amount: '1500 mg', dv: '*' },
+      { name: 'L-Lysine HCl', amount: '1000 mg', dv: '*' },
+      { name: 'Coconut Water Powder', amount: '500 mg', dv: '*' },
+      { name: 'Pink Himalayan Crystal Salt', amount: '100 mg', dv: '*' }
+    ]
+  },
+  {
+    id: 'impact-whey-1kg',
+    name: '100% IMPACT WHEY ISOLATE (1 KG)',
+    width: 400,
+    height: 145,
+    tagline: 'PREMIUM COLD-FILTERED WHEY PROTEIN ISOLATE',
+    flavor: 'DOUBLE CHOCOLATE',
+    netWt: '1 KG (30 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 1 level scoop (33g) with 200-250ml of water or low-fat milk in a shaker cup. Shake for 25-30 seconds. Consume immediately post-workout or any time you need high-quality protein.',
+    warnings: 'Contains milk and soy ingredients. Manufactured in a facility that also processes wheat, egg, and nuts. Not suitable for individuals with lactose intolerance.',
+    storage: 'Keep bag zipped and store in a cool, dry place. Do not use if safety seal is broken.',
+    keyFeatures: ['25G PURE PROTEIN PER SERVING', '5.5G NATURAL BCAAs TO RECOVERY', 'ZERO ADDED SUGAR & ULTRA LOW CARBS'],
+    nutrients: [
+      { name: 'Calories', amount: '120 kcal', dv: '6%' },
+      { name: 'Protein (Dry Basis)', amount: '25 g', dv: '50%' },
+      { name: 'Total Carbohydrates', amount: '1.5 g', dv: '<1%' },
+      { name: 'Total Fat', amount: '1 g', dv: '1.2%' },
+      { name: 'Dietary Fiber', amount: '0 g', dv: '0%' },
+      { name: 'Sodium', amount: '120 mg', dv: '5%' },
+      { name: 'Calcium', amount: '130 mg', dv: '10%' }
+    ]
+  },
+  {
+    id: 'impact-whey-2kg',
+    name: '100% IMPACT WHEY ISOLATE (2 KG)',
+    width: 580,
+    height: 167,
+    tagline: 'PREMIUM COLD-FILTERED WHEY PROTEIN ISOLATE',
+    flavor: 'DOUBLE CHOCOLATE',
+    netWt: '2 KG (60 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 1 level scoop (33g) with 200-250ml of water or milk. Shake for 25-30 seconds. Consume post-workout or throughout the day as a high-protein supplement.',
+    warnings: 'Contains milk and soy. Keep out of reach of children. Store in a cool, dark place.',
+    storage: 'Keep bag closed. Avoid heat and moisture exposure. Keep out of direct sunlight.',
+    keyFeatures: ['25G PURE PROTEIN PER SERVING', '5.5G NATURAL BCAAs TO RECOVERY', 'ZERO ADDED SUGAR & ULTRA LOW CARBS'],
+    nutrients: [
+      { name: 'Calories', amount: '120 kcal', dv: '6%' },
+      { name: 'Protein (Dry Basis)', amount: '25 g', dv: '50%' },
+      { name: 'Total Carbohydrates', amount: '1.5 g', dv: '<1%' },
+      { name: 'Total Fat', amount: '1 g', dv: '1.2%' },
+      { name: 'Dietary Fiber', amount: '0 g', dv: '0%' },
+      { name: 'Sodium', amount: '120 mg', dv: '5%' },
+      { name: 'Calcium', amount: '130 mg', dv: '10%' }
+    ]
+  },
+  {
+    id: 'mass-gainer-3kg',
+    name: 'MASSIVE MASS GAINER (3 KG)',
+    width: 580,
+    height: 167,
+    tagline: 'ULTRA-CLEAN HIGH CALORIE CARB & PROTEIN COMPLEX',
+    flavor: 'DOUBLE CHOCOLATE',
+    netWt: '3 KG (30 SERVINGS)',
+    mfgBy: 'Ripped Up Nutrition',
+    directions: 'Mix 3 scoops (100g) with 350ml of milk or water. For massive gains, consume 1 serving (3 scoops) twice daily, once in the morning and once immediately post-training.',
+    warnings: 'Diabetics and individuals with blood sugar regulation disorders should consult a physician before using this product. Store out of reach of children.',
+    storage: 'Store in a dry, ventilated box. Seal tight after use to maintain dry texture.',
+    keyFeatures: ['1200 HIGH BULK CALORIES PER DAY', '50G SHOCK PROTEIN RECOVERY MATRIX', '3G CREATINE MONOHYDRATE POWER'],
+    nutrients: [
+      { name: 'Calories (Per 300g Daily Serv.)', amount: '1200 kcal', dv: '60%' },
+      { name: 'Protein', amount: '50 g', dv: '100%' },
+      { name: 'Total Carbohydrates', amount: '240 g', dv: '80%' },
+      { name: 'Dietary Sugars', amount: '15 g', dv: '*' },
+      { name: 'Total Fat', amount: '6 g', dv: '8%' },
+      { name: 'Creatine Monohydrate', amount: '3000 mg', dv: '*' },
+      { name: 'Digestive DigeZyme® Blend', amount: '150 mg', dv: '*' }
+    ]
+  }
+];
 
 export const AdminPanel: React.FC = () => {
   const {
@@ -33,7 +210,8 @@ export const AdminPanel: React.FC = () => {
   } = useStore();
 
   // Dashboard Tabs & Orders Data States
-  const [adminTab, setAdminTab] = useState<'products' | 'orders' | 'users'>('products');
+  const [adminTab, setAdminTab] = useState<'products' | 'orders' | 'users' | 'labels'>('products');
+  const [selectedLabelPreset, setSelectedLabelPreset] = useState<string>('double-shot-pre-workout');
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersNextCursor, setOrdersNextCursor] = useState<string | null>(null);
@@ -42,6 +220,30 @@ export const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [selectedUserForModal, setSelectedUserForModal] = useState<User | null>(null);
+
+  // Label preview scaling ref, state, and resize listener
+  const labelWrapperRef = React.useRef<HTMLDivElement>(null);
+  const [labelScale, setLabelScale] = useState(1);
+
+  useEffect(() => {
+    if (adminTab !== 'labels' || !labelWrapperRef.current) return;
+    const updateScale = () => {
+      if (labelWrapperRef.current) {
+        const width = labelWrapperRef.current.getBoundingClientRect().width;
+        // Target canvas width is 1200px, add a bit of padding (48px)
+        const newScale = Math.min(1, (width - 48) / 1200);
+        setLabelScale(newScale);
+      }
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    const timer = setTimeout(updateScale, 100);
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      clearTimeout(timer);
+    };
+  }, [adminTab, selectedLabelPreset]);
+
 
   // Auth local states
   const [email, setEmail] = useState('');
@@ -134,6 +336,423 @@ export const AdminPanel: React.FC = () => {
     if (success) {
       loadOrders();
     }
+  };
+
+  const handlePrintLabel = (preset: LabelPreset) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Popup blocker blocked the print window. Please allow popups for this site.');
+      return;
+    }
+
+    const nutrientsRows = preset.nutrients.map(nut => `
+      <tr class="${['calories', 'protein', 'total'].some(k => nut.name.toLowerCase().includes(k)) ? 'bold-row' : ''}">
+        <td style="padding: 4px 0; border-bottom: 1px solid #333;">${nut.name}</td>
+        <td style="text-align: right; font-weight: 600; padding: 4px 0; border-bottom: 1px solid #333;">${nut.amount} (${nut.dv})</td>
+      </tr>
+    `).join('');
+
+    const highlightsHtml = preset.keyFeatures.map(feat => `
+      <div class="highlight-tag">${feat}</div>
+    `).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print Label - ${preset.name}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;800&family=Roboto:wght@400;700&display=swap');
+            
+            body {
+              margin: 0;
+              padding: 0;
+              background-color: #000000;
+              color: #ffffff;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              font-family: 'Roboto', sans-serif;
+              box-sizing: border-box;
+            }
+
+            @page {
+              size: ${preset.width}mm ${preset.height}mm;
+              margin: 0;
+            }
+
+            @media print {
+              html, body {
+                background-color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              body {
+                min-height: auto;
+              }
+              .label-print-canvas {
+                width: ${preset.width}mm !important;
+                height: ${preset.height}mm !important;
+                border: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+              }
+            }
+
+            /* Container matching exact dimensions */
+            .label-print-canvas {
+              width: ${preset.width}mm;
+              height: ${preset.height}mm;
+              background-color: #050505;
+              border: 1px solid #d4af37;
+              box-sizing: border-box;
+              display: grid;
+              grid-template-columns: 27% 46% 27%;
+              overflow: hidden;
+              position: relative;
+            }
+
+            /* Separator lines for folds */
+            .label-print-canvas::before {
+              content: '';
+              position: absolute;
+              left: 27%;
+              top: 0;
+              bottom: 0;
+              width: 1px;
+              border-left: 1px dashed rgba(212, 175, 55, 0.25);
+              pointer-events: none;
+            }
+            .label-print-canvas::after {
+              content: '';
+              position: absolute;
+              right: 27%;
+              top: 0;
+              bottom: 0;
+              width: 1px;
+              border-left: 1px dashed rgba(212, 175, 55, 0.25);
+              pointer-events: none;
+            }
+
+            .print-panel {
+              height: 100%;
+              padding: 6mm 4mm;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              overflow: hidden;
+            }
+
+            /* Left Panel Styles */
+            .panel-left {
+              border-right: 1px solid #1a1a1a;
+            }
+            .panel-section {
+              margin-bottom: 2mm;
+            }
+            .panel-section h4 {
+              margin: 0 0 0.5mm 0;
+              font-family: 'Bebas Neue', sans-serif;
+              font-size: 10pt;
+              color: #d4af37;
+              letter-spacing: 0.8px;
+            }
+            .panel-section p {
+              margin: 0;
+              font-size: 6.5pt;
+              line-height: 1.3;
+              color: #dddddd;
+            }
+            .panel-section p.warning-text {
+              color: #ff4d4d;
+              font-weight: bold;
+            }
+
+            .veg-badge-wrap {
+              display: flex;
+              align-items: center;
+              gap: 1.5mm;
+              margin-top: 1mm;
+            }
+            .veg-badge-icon {
+              width: 3.5mm;
+              height: 3.5mm;
+              border: 1px solid #22c55e;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .veg-badge-icon::after {
+              content: '';
+              width: 1.8mm;
+              height: 1.8mm;
+              background-color: #22c55e;
+              border-radius: 50%;
+              display: block;
+            }
+
+            /* Middle Panel Styles */
+            .panel-middle {
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+              background: radial-gradient(circle at center, #111 0%, #030303 100%);
+              position: relative;
+            }
+            .label-logo-img {
+              width: 14mm;
+              height: auto;
+              margin-bottom: 2mm;
+              border: 1.5px solid #d4af37;
+              border-radius: 50%;
+              background-color: #000;
+            }
+            .label-brand-heading {
+              font-family: 'Bebas Neue', sans-serif;
+              font-size: 22pt;
+              letter-spacing: 3px;
+              color: #ffffff;
+              margin-bottom: 1mm;
+            }
+            .label-brand-heading span {
+              color: #d4af37;
+            }
+            .label-product-title {
+              font-family: 'Bebas Neue', sans-serif;
+              font-size: 18pt;
+              color: #ffffff;
+              letter-spacing: 1px;
+              margin-bottom: 1.5mm;
+              text-shadow: 0 0 8px rgba(212,175,55,0.4);
+            }
+            .label-product-tagline {
+              font-size: 6.5pt;
+              font-weight: 600;
+              color: #888888;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+              margin-bottom: 3mm;
+            }
+            .label-highlights-row {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 1.2mm;
+              justify-content: center;
+              margin-bottom: 3mm;
+              max-width: 95%;
+            }
+            .highlight-tag {
+              font-size: 5.5pt;
+              font-weight: bold;
+              background-color: #121212;
+              color: #d4af37;
+              border: 1px solid #d4af37;
+              padding: 0.6mm 1.5mm;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+            }
+            .label-middle-footer {
+              display: flex;
+              width: 90%;
+              justify-content: space-between;
+              border-top: 1px solid #221c0e;
+              padding-top: 2mm;
+              margin-top: 2mm;
+            }
+            .label-middle-flavor, .label-middle-net {
+              font-size: 7pt;
+              font-weight: bold;
+              text-transform: uppercase;
+              color: #ffffff;
+            }
+            .label-middle-flavor {
+              color: #d4af37;
+            }
+
+            /* Right Panel Styles */
+            .panel-right {
+              border-left: 1px solid #1a1a1a;
+            }
+            .supplement-facts-container {
+              border: 1px solid #ffffff;
+              padding: 1.5mm;
+              display: flex;
+              flex-direction: column;
+            }
+            .supplement-facts-container h3 {
+              margin: 0 0 0.8mm 0;
+              font-family: 'Montserrat', sans-serif;
+              font-size: 9pt;
+              font-weight: 800;
+              text-transform: uppercase;
+              border-bottom: 3px solid #ffffff;
+              padding-bottom: 0.5mm;
+            }
+            .facts-servings {
+              font-size: 6pt;
+              font-weight: bold;
+              margin-bottom: 1mm;
+              border-bottom: 1px solid #ffffff;
+              padding-bottom: 0.5mm;
+            }
+            .facts-table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 6pt;
+            }
+            .facts-table th {
+              border-bottom: 2px solid #ffffff;
+              padding-bottom: 0.5mm;
+              font-size: 6pt;
+              font-weight: bold;
+            }
+            .facts-table tr.bold-row {
+              font-weight: bold;
+            }
+            .facts-footer {
+              font-size: 5pt;
+              color: #aaaaaa;
+              line-height: 1.2;
+              margin-top: 1mm;
+            }
+
+            .label-barcode-section {
+              display: flex;
+              align-items: center;
+              gap: 2mm;
+              margin-top: 1.5mm;
+            }
+            .barcode-mockup {
+              display: flex;
+              height: 6mm;
+              background-color: #ffffff;
+              padding: 0.8mm 1.2mm;
+              align-items: center;
+            }
+            .barcode-bar {
+              height: 100%;
+              background-color: #000;
+              margin-right: 0.3mm;
+            }
+            .barcode-bar.b1 { width: 0.3mm; }
+            .barcode-bar.b2 { width: 0.6mm; }
+            .barcode-bar.b3 { width: 0.9mm; }
+            
+            .barcode-meta {
+              font-size: 5pt;
+              color: #888888;
+              font-family: monospace;
+              line-height: 1.1;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="label-print-canvas">
+            <!-- Left Panel -->
+            <div class="print-panel panel-left">
+              <div class="panel-section">
+                <h4>SUGGESTED USE</h4>
+                <p>${preset.directions}</p>
+              </div>
+              <div class="panel-section">
+                <h4>STORAGE GUIDELINES</h4>
+                <p>${preset.storage}</p>
+              </div>
+              <div class="panel-section">
+                <h4>WARNINGS</h4>
+                <p class="warning-text">${preset.warnings}</p>
+              </div>
+              <div class="panel-footer-info">
+                <div class="veg-badge-wrap">
+                  <span class="veg-badge-icon"></span>
+                  <span style="font-size: 6.5pt; font-weight: bold; color: #22c55e;">100% VEGETARIAN</span>
+                </div>
+                <div style="font-size: 6pt; color: #888; margin-top: 1mm;">
+                  Manufactured by: <strong>${preset.mfgBy}</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Middle Panel -->
+            <div class="print-panel panel-middle">
+              <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK" class="label-logo-img" />
+              <div class="label-brand-heading">
+                <span>GYMMM</span> TANK
+              </div>
+              <div class="label-product-title">${preset.name.replace(/\s*\(\d+\s*KG\)/i, '')}</div>
+              <div class="label-product-tagline">${preset.tagline}</div>
+              
+              <div class="label-highlights-row">
+                ${highlightsHtml}
+              </div>
+
+              <div class="label-middle-footer">
+                <div class="label-middle-flavor">FLAVOR: ${preset.flavor}</div>
+                <div class="label-middle-net">${preset.netWt}</div>
+              </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="print-panel panel-right">
+              <div class="supplement-facts-container">
+                <h3>Supplement Facts</h3>
+                <div class="facts-servings">
+                  ${preset.netWt.toLowerCase().includes('serving') 
+                    ? preset.netWt.toUpperCase() 
+                    : `NET WEIGHT: ${preset.netWt}`}
+                </div>
+                <table class="facts-table">
+                  <thead>
+                    <tr>
+                      <th>Amount Per Serving</th>
+                      <th style="text-align: right;">% DV</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${nutrientsRows}
+                  </tbody>
+                </table>
+                <div class="facts-footer">
+                  * Daily Value (DV) not established.<br />
+                  Percent Daily Values are based on a 2,000 calorie diet.
+                </div>
+              </div>
+
+              <div class="label-barcode-section">
+                <div class="barcode-mockup">
+                  <span class="barcode-bar b1"></span>
+                  <span class="barcode-bar b2"></span>
+                  <span class="barcode-bar b1"></span>
+                  <span class="barcode-bar b3"></span>
+                  <span class="barcode-bar b2"></span>
+                  <span class="barcode-bar b1"></span>
+                  <span class="barcode-bar b2"></span>
+                  <span class="barcode-bar b3"></span>
+                  <span class="barcode-bar b1"></span>
+                  <span class="barcode-bar b2"></span>
+                </div>
+                <div class="barcode-meta">
+                  <div>BATCH: GT${preset.id.substring(0, 3).toUpperCase()}-99A</div>
+                  <div>MFG: 06/2026</div>
+                  <div>EXP: 06/2028</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            window.onload = () => {
+              window.print();
+              setTimeout(() => { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   // ----------------------------------------------------
@@ -399,6 +1018,12 @@ export const AdminPanel: React.FC = () => {
           onClick={() => setAdminTab('users')}
         >
           👥 Registered Customers ({users.length})
+        </button>
+        <button 
+          className={`admin-tab-btn ${adminTab === 'labels' ? 'active' : ''}`}
+          onClick={() => setAdminTab('labels')}
+        >
+          🏷️ Printable Labels
         </button>
       </div>
 
@@ -717,23 +1342,23 @@ export const AdminPanel: React.FC = () => {
             </div>
           )}
         </div>
-      ) : (
+      ) : adminTab === 'users' ? (
         <div className="admin-table-wrapper">
           <table className="admin-table users-table">
             <thead>
               <tr>
-                <th>Customer Details</th>
+                <th>Customer Name & ID</th>
                 <th>Email Address</th>
-                <th>Account Role</th>
-                <th>Tank Coins</th>
-                <th>Registration Date</th>
+                <th>Role</th>
+                <th>Coins Balance</th>
+                <th>Join Date</th>
               </tr>
             </thead>
             <tbody>
               {usersLoading ? (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '3rem' }}>
-                    <RefreshCw size={24} style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
+                    <RefreshCw size={24} style={{ animation: 'spin 2s linear infinite' }} />
                     <p style={{ marginTop: '0.5rem' }}>Loading Customers...</p>
                   </td>
                 </tr>
@@ -787,6 +1412,179 @@ export const AdminPanel: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+      ) : (
+        /* Printable Label designs dashboard view */
+        <div className="admin-labels-tab-layout">
+          {/* Sidebar */}
+          <div className="admin-labels-sidebar">
+            <h3 style={{ margin: '0 0 1rem 0', textTransform: 'uppercase', fontFamily: 'var(--font-display)', color: 'var(--gold-primary)', letterSpacing: '1px', fontSize: '1.25rem' }}>Label Presets</h3>
+            <div className="admin-labels-presets-list">
+              {labelPresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  className={`admin-labels-preset-btn ${selectedLabelPreset === preset.id ? 'active' : ''}`}
+                  onClick={() => setSelectedLabelPreset(preset.id)}
+                >
+                  <div className="preset-btn-title">{preset.name}</div>
+                  <div className="preset-btn-dim">{preset.width}mm x {preset.height}mm</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Central Preview Area */}
+          {(() => {
+            const preset = labelPresets.find(p => p.id === selectedLabelPreset) || labelPresets[0];
+            const targetWidth = 1200;
+            const targetHeight = (targetWidth * preset.height) / preset.width;
+            const scaledHeight = targetHeight * labelScale;
+            return (
+              <div className="admin-labels-preview-panel">
+                <div className="preview-panel-header">
+                  <div className="preview-header-info">
+                    <span className="info-title">{preset.name}</span>
+                    <span className="info-dim">📐 Target Size: {preset.width}mm x {preset.height}mm</span>
+                  </div>
+                  <button
+                    className="admin-btn admin-btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textTransform: 'uppercase', fontWeight: 700 }}
+                    onClick={() => handlePrintLabel(preset)}
+                  >
+                    <Printer size={16} />
+                    Print Sticker Label
+                  </button>
+                </div>
+
+                <div className="preview-instructions-alert">
+                  💡 <strong>Sticker Print Tip:</strong> In the browser print dialog, set <strong>Margins</strong> to <em>None</em>, enable <strong>Background graphics</strong>, and set paper size to custom or match the target dimensions.
+                </div>
+
+                {/* Viewport label mockup container */}
+                <div 
+                  ref={labelWrapperRef}
+                  className="label-viewport-wrapper"
+                  style={{
+                    height: `${scaledHeight + 32}px`,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{
+                    '--label-width': preset.width,
+                    '--label-height': preset.height,
+                    width: `${targetWidth}px`,
+                    height: `${targetHeight}px`,
+                    transform: `scale(${labelScale})`,
+                    transformOrigin: 'center center',
+                    flexShrink: 0
+                  } as React.CSSProperties} className="label-visual-canvas">
+                    {/* Left Panel */}
+                    <div className="label-visual-panel panel-left">
+                      <div className="panel-section">
+                        <h4>SUGGESTED USE</h4>
+                        <p>{preset.directions}</p>
+                      </div>
+                      <div className="panel-section">
+                        <h4>STORAGE GUIDELINES</h4>
+                        <p>{preset.storage}</p>
+                      </div>
+                      <div className="panel-section">
+                        <h4>WARNINGS</h4>
+                        <p className="warning-text">{preset.warnings}</p>
+                      </div>
+                      <div className="panel-footer-info">
+                        <div className="veg-badge-wrap">
+                          <span className="veg-badge-icon"></span>
+                          <span style={{ fontSize: '10px', fontWeight: 700 }}>100% VEGETARIAN</span>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#888', marginTop: '0.4rem' }}>
+                          Manufactured by: <strong>{preset.mfgBy}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Middle Panel */}
+                    <div className="label-visual-panel panel-middle">
+                      <img src="/images/logo.png" alt="GYMMM TANK" className="label-logo-img" />
+                      <div className="label-brand-heading">
+                        <span className="gold-txt">GYMMM</span> TANK
+                      </div>
+                      <div className="label-product-title">{preset.name.replace(/\s*\(\d+\s*KG\)/i, '')}</div>
+                      <div className="label-product-tagline">{preset.tagline}</div>
+                      
+                      <div className="label-highlights-row">
+                        {preset.keyFeatures.map((feat, idx) => (
+                          <div key={idx} className="highlight-tag">{feat}</div>
+                        ))}
+                      </div>
+
+                      <div className="label-middle-footer">
+                        <div className="label-middle-flavor">FLAVOR: {preset.flavor}</div>
+                        <div className="label-middle-net">{preset.netWt}</div>
+                      </div>
+                    </div>
+
+                    {/* Right Panel */}
+                    <div className="label-visual-panel panel-right">
+                      <div className="supplement-facts-container">
+                        <h3>Supplement Facts</h3>
+                        <div className="facts-servings">
+                          {preset.netWt.toLowerCase().includes('serving') 
+                            ? preset.netWt.toUpperCase() 
+                            : `NET WEIGHT: ${preset.netWt}`}
+                        </div>
+                        <table className="facts-table">
+                          <thead>
+                            <tr>
+                              <th>Amount Per Serving</th>
+                              <th style={{ textAlign: 'right' }}>% DV</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {preset.nutrients.map((nut, idx) => (
+                              <tr key={idx} className={nut.name.toUpperCase() === 'CALORIES' || nut.name.toUpperCase() === 'PROTEIN' || nut.name.toLowerCase().includes('total') ? 'bold-row' : ''}>
+                                <td style={{ borderBottom: '1px solid #222', padding: '3px 0' }}>{nut.name}</td>
+                                <td style={{ borderBottom: '1px solid #222', textAlign: 'right', fontWeight: 600, padding: '3px 0' }}>{nut.amount} ({nut.dv})</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div className="facts-footer">
+                          * Daily Value (DV) not established.<br />
+                          Percent Daily Values are based on a 2,000 calorie diet.
+                        </div>
+                      </div>
+
+                      {/* Barcode & Batch Details */}
+                      <div className="label-barcode-section">
+                        <div className="barcode-mockup">
+                          <span className="barcode-bar b1"></span>
+                          <span className="barcode-bar b2"></span>
+                          <span className="barcode-bar b1"></span>
+                          <span className="barcode-bar b3"></span>
+                          <span className="barcode-bar b2"></span>
+                          <span className="barcode-bar b1"></span>
+                          <span className="barcode-bar b2"></span>
+                          <span className="barcode-bar b3"></span>
+                          <span className="barcode-bar b1"></span>
+                          <span className="barcode-bar b2"></span>
+                        </div>
+                        <div className="barcode-meta">
+                          <div>BATCH: GT{preset.id.substring(0, 3).toUpperCase()}-99A</div>
+                          <div>MFG: 06/2026</div>
+                          <div>EXP: 06/2028</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

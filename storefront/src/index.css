@@ -949,6 +949,7 @@ main.storefront-main {
   padding-top: 100%; /* 1:1 Aspect Ratio */
   background-color: rgba(0, 0, 0, 0.2);
   perspective: 1000px;
+  -webkit-perspective: 1000px;
 }
 
 .product-card-image-inner {
@@ -959,6 +960,7 @@ main.storefront-main {
   height: 100%;
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .product-card:hover .product-card-image-inner {
@@ -1168,6 +1170,7 @@ main.storefront-main {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   z-index: 2000;
   animation: fadeIn 0.25s ease-out;
 }
@@ -1406,6 +1409,7 @@ main.storefront-main {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 300;
   display: flex;
   align-items: center;
@@ -2464,6 +2468,7 @@ body {
   gap: 1.8rem;
   margin: 4.5rem 0;
   perspective: 1000px;
+  -webkit-perspective: 1000px;
 }
 
 .gym-trust-badge {
@@ -2480,6 +2485,7 @@ body {
   position: relative;
   overflow: hidden;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 /* Subtle gold sweep overlay across the card */
@@ -6462,6 +6468,7 @@ body {
 /* Interactive Credit Card styles */
 .credit-card-container-wrap {
   perspective: 1000px;
+  -webkit-perspective: 1000px;
   width: 100%;
   max-width: 320px;
   height: 190px;
@@ -6473,11 +6480,13 @@ body {
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .interactive-credit-card.flipped {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 
 .card-face {
@@ -6485,6 +6494,7 @@ body {
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 12px;
   padding: 1.2rem;
   box-sizing: border-box;
@@ -7890,4 +7900,487 @@ body {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   Printable Product Labels Generator
+   ========================================================================== */
+.admin-labels-tab-layout {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 992px) {
+  .admin-labels-tab-layout {
+    flex-direction: column;
+  }
+}
+
+.admin-labels-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 1.25rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 992px) {
+  .admin-labels-sidebar {
+    width: 100%;
+  }
+}
+
+.admin-labels-presets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-labels-preset-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ffffff;
+}
+
+.admin-labels-preset-btn:hover {
+  background: rgba(212, 175, 55, 0.04);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.admin-labels-preset-btn.active {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+}
+
+.preset-btn-title {
+  font-family: var(--font-athletic);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.preset-btn-dim {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.admin-labels-preview-panel {
+  flex-grow: 1;
+  background-color: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.preview-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .preview-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.preview-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.preview-header-info .info-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.preview-header-info .info-dim {
+  font-size: 0.85rem;
+  color: var(--gold-primary);
+  font-weight: 600;
+}
+
+.preview-instructions-alert {
+  background-color: rgba(212, 175, 55, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #dddddd;
+  line-height: 1.4;
+}
+
+/* Viewport label canvas scaling */
+.label-viewport-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 2.5rem 2.5rem;
+  box-sizing: border-box;
+  background-color: #030303;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.label-visual-canvas {
+  width: 100%;
+  max-width: 1000px;
+  aspect-ratio: var(--label-width) / var(--label-height);
+  background-color: #050505;
+  border: 1px solid var(--gold-primary);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 27% 46% 27%;
+  overflow: hidden;
+  position: relative;
+  container-type: size;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+}
+
+/* Dotted guides for folding panels */
+.label-visual-canvas::before {
+  content: '';
+  position: absolute;
+  left: 27%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px dashed rgba(212, 175, 55, 0.25);
+  pointer-events: none;
+}
+
+.label-visual-canvas::after {
+  content: '';
+  position: absolute;
+  right: 27%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px dashed rgba(212, 175, 55, 0.25);
+  pointer-events: none;
+}
+
+/* Dimension indicators surrounding the label */
+.label-dimension-indicator {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.label-dimension-indicator .indicator-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.width-indicator {
+  left: 2.5rem;
+  right: 2.5rem;
+  top: 0.75rem;
+  height: 1rem;
+}
+
+.width-indicator .indicator-line {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+}
+
+.width-indicator .indicator-text {
+  background-color: #030303;
+  padding: 0 0.5rem;
+  z-index: 1;
+}
+
+.height-indicator {
+  top: 2.5rem;
+  bottom: 2.5rem;
+  right: 0.75rem;
+  width: 1rem;
+}
+
+.height-indicator .indicator-line {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+}
+
+.height-indicator .indicator-text {
+  background-color: #030303;
+  padding: 0.2rem 0;
+  writing-mode: vertical-rl;
+  z-index: 1;
+}
+
+/* Sub-panel styling scaling proportionally with Container Queries */
+.label-visual-panel {
+  height: 100%;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.panel-left {
+  border-right: 1px solid #111;
+}
+
+.panel-left .panel-section {
+  margin-bottom: 2cqh;
+}
+
+.panel-left .panel-section h4 {
+  margin: 0 0 4px 0;
+  font-family: var(--font-athletic);
+  font-size: 16px;
+  color: var(--gold-primary);
+  letter-spacing: 0.5px;
+}
+
+.panel-left .panel-section p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #cccccc;
+}
+
+.panel-left .panel-section p.warning-text {
+  color: #ff4d4d;
+  font-weight: 700;
+}
+
+.veg-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.veg-badge-icon {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.veg-badge-icon::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Middle panel */
+.panel-middle {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(circle at center, #111 0%, #030303 100%);
+}
+
+.label-logo-img {
+  width: 50px;
+  height: auto;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--gold-primary);
+  border-radius: 50%;
+  background-color: #000;
+}
+
+.label-brand-heading {
+  font-family: var(--font-display);
+  font-size: 44px;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.label-brand-heading .gold-txt {
+  color: var(--gold-primary);
+}
+
+.label-product-title {
+  font-family: var(--font-display);
+  font-size: 34px;
+  color: #ffffff;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-shadow: 0 0 8px rgba(212,175,55,0.4);
+  line-height: 1;
+}
+
+.label-product-tagline {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.label-highlights-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 8px;
+  max-width: 95%;
+}
+
+.label-highlights-row .highlight-tag {
+  font-size: 11px;
+  font-weight: bold;
+  background-color: #121212;
+  color: var(--gold-primary);
+  border: 1px solid var(--gold-primary);
+  padding: 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.label-middle-footer {
+  display: flex;
+  width: 90%;
+  justify-content: space-between;
+  border-top: 1px solid #221c0e;
+  padding-top: 1.5cqh;
+  margin-top: 1.5cqh;
+}
+
+.label-middle-flavor,
+.label-middle-net {
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.label-middle-flavor {
+  color: var(--gold-primary);
+}
+
+/* Right Panel facts nutrition table styling */
+.panel-right {
+  border-left: 1px solid #111;
+}
+
+.supplement-facts-container {
+  border: 1px solid #ffffff;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.supplement-facts-container h3 {
+  margin: 0 0 4px 0;
+  font-family: var(--font-header);
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 2px;
+}
+
+.facts-servings {
+  font-size: 11px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #ffffff;
+  padding-bottom: 3px;
+}
+
+.facts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.facts-table th {
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 2px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.facts-table tr.bold-row {
+  font-weight: bold;
+}
+
+.facts-footer {
+  font-size: 9px;
+  color: #aaaaaa;
+  line-height: 1.2;
+  margin-top: 6px;
+}
+
+.label-barcode-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.barcode-mockup {
+  display: flex;
+  height: 24px;
+  background-color: #ffffff;
+  padding: 3px 6px;
+  align-items: center;
+}
+
+.barcode-bar {
+  height: 100%;
+  background-color: #000;
+  margin-right: 0.3px;
+}
+
+.barcode-bar.b1 { width: 1px; }
+.barcode-bar.b2 { width: 2px; }
+.barcode-bar.b3 { width: 3px; }
+
+.barcode-meta {
+  font-size: 9px;
+  color: #888888;
+  font-family: monospace;
+  line-height: 1.1;
+}
+
 
