@@ -23,6 +23,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'gymmm-tank-secret-key-9988';
 app.use(cors());
 app.use(express.json());
 
+// Trust Render's reverse proxy — required for express-rate-limit to work correctly on cloud hosts
+// Without this, rate limiting throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR and crashes the server
+app.set('trust proxy', 1);
+
 // ----------------------------------------------------
 // Security: Helmet (HTTP headers) + Rate Limiting
 // ----------------------------------------------------
