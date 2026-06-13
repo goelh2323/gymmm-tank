@@ -8,6 +8,7 @@ import prisma from './db';
 import { exec } from 'child_process';
 import path from 'path';
 import nodemailer from 'nodemailer';
+import { sendOrderConfirmationWhatsApp, sendOrderStatusWhatsApp } from './services/whatsapp';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
@@ -993,6 +994,7 @@ app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => 
 
     // Send order confirmation email (fire-and-forget — non-blocking)
     sendOrderConfirmationEmail(createdOrder).catch(() => {});
+    sendOrderConfirmationWhatsApp(createdOrder).catch(() => {});
 
     res.status(201).json({
       message: 'Order placed successfully',
@@ -1201,16 +1203,19 @@ app.put('/api/v1/admin/orders/:id/status', authenticateAdmin, async (req: AuthRe
     // Send shipment email when admin marks order as SHIPPED (fire-and-forget)
     if (fulfillment === 'SHIPPED' && existingOrder.fulfillment !== 'SHIPPED') {
       sendShipmentEmail(updatedOrder).catch(() => {});
+      sendOrderStatusWhatsApp(updatedOrder, 'SHIPPED').catch(() => {});
     }
 
     // Send delivery email when admin marks order as DELIVERED (fire-and-forget)
     if (fulfillment === 'DELIVERED' && existingOrder.fulfillment !== 'DELIVERED') {
       sendDeliveryEmail(updatedOrder).catch(() => {});
+      sendOrderStatusWhatsApp(updatedOrder, 'DELIVERED').catch(() => {});
     }
 
     // Send cancellation email when admin marks order as CANCELLED (fire-and-forget)
     if (fulfillment === 'CANCELLED' && existingOrder.fulfillment !== 'CANCELLED') {
       sendCancellationEmail(updatedOrder).catch(() => {});
+      sendOrderStatusWhatsApp(updatedOrder, 'CANCELLED').catch(() => {});
     }
 
     res.json({

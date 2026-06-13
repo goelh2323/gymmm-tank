@@ -9,6 +9,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { AuthModal } from './components/AuthModal';
 import { ProductDetailView } from './components/ProductDetailView';
 import { OrderReceiptModal } from './components/OrderReceiptModal';
+import { WhatsAppWidget } from './components/WhatsAppWidget';
 import {
   Dumbbell,
   RotateCcw,
@@ -1413,6 +1414,7 @@ const LayoutWrapper: React.FC = () => {
           © {new Date().getFullYear()} GYMMM TANK Supplements Ltd. All rights reserved.
         </div>
       </footer>
+      <WhatsAppWidget />
     </div>
   );
 };
