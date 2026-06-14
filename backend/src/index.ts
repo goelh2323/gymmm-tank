@@ -1324,20 +1324,26 @@ app.post('/api/v1/admin/seed', authenticateAdmin, async (req: AuthRequest, res: 
 
 // Diagnostic Endpoint: test email SMTP/Resend API settings
 app.get('/api/v1/test-email', async (req: Request, res: Response) => {
+  const activeDriver = process.env.BREVO_SMTP_KEY 
+    ? 'Brevo HTTP API' 
+    : process.env.RESEND_API_KEY 
+      ? 'Resend HTTP API' 
+      : 'Nodemailer SMTP';
+
   try {
     const toAddress = (req.query.to as string) || 'transformernutritionamb@gmail.com';
     const result = await sendEmail({
       to: toAddress,
       subject: '🧪 GYMMM TANK Email Diagnostic Test',
       html: `<h3>If you receive this, your email configuration is working perfectly!</h3>
-             <p><strong>Active Driver:</strong> ${process.env.RESEND_API_KEY ? 'Resend HTTP API' : 'Nodemailer SMTP'}</p>
+             <p><strong>Active Driver:</strong> ${activeDriver}</p>
              <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>`,
     });
 
     res.json({
       success: true,
       message: 'Test email sent successfully',
-      driver: process.env.RESEND_API_KEY ? 'Resend API' : 'Nodemailer SMTP',
+      driver: activeDriver,
       result,
     });
   } catch (err: any) {
@@ -1345,9 +1351,10 @@ app.get('/api/v1/test-email', async (req: Request, res: Response) => {
       success: false,
       error: err.message || 'Unknown Email error',
       stack: err.stack,
-      driver: process.env.RESEND_API_KEY ? 'Resend API' : 'Nodemailer SMTP',
+      driver: activeDriver,
       EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not Set',
       EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not Set',
+      BREVO_SMTP_KEY: process.env.BREVO_SMTP_KEY ? 'Set' : 'Not Set',
       RESEND_API_KEY: process.env.RESEND_API_KEY ? 'Set' : 'Not Set',
     });
   }
