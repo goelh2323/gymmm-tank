@@ -10,6 +10,7 @@ import { AuthModal } from './components/AuthModal';
 import { ProductDetailView } from './components/ProductDetailView';
 import { OrderReceiptModal } from './components/OrderReceiptModal';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
+import { FooterModals } from './components/FooterModals';
 import {
   Dumbbell,
   RotateCcw,
@@ -1124,6 +1125,7 @@ const LayoutWrapper: React.FC = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { products, tankMode, search, completedOrder, setCompletedOrder } = useStore();
+  const [activeFooterModal, setActiveFooterModal] = useState<string | null>(null);
 
   // Sync state with browser back/forward navigation
   useEffect(() => {
@@ -1398,15 +1400,15 @@ const LayoutWrapper: React.FC = () => {
 
         {/* Bottom Navigation Links */}
         <div className="footer-bottom-links">
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Track Your Order</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Return/Exchange</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Verify Your Product</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Become A Dealer</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Terms Of Service</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Disclaimer</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>Contact Us</a>
-          <a href="#" className="bottom-link" onClick={(e) => e.preventDefault()}>About Us</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('track'); }}>Track Your Order</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('policy'); }}>Return/Exchange</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('verify'); }}>Verify Your Product</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('dealer'); }}>Become A Dealer</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('terms'); }}>Terms Of Service</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('privacy'); }}>Privacy Policy</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('disclaimer'); }}>Disclaimer</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('contact'); }}>Contact Us</a>
+          <a href="#" className="bottom-link" onClick={(e) => { e.preventDefault(); setActiveFooterModal('about'); }}>About Us</a>
         </div>
 
         {/* Copyright */}
@@ -1415,6 +1417,7 @@ const LayoutWrapper: React.FC = () => {
         </div>
       </footer>
       <WhatsAppWidget />
+      <FooterModals activeModal={activeFooterModal} onClose={() => setActiveFooterModal(null)} />
     </div>
   );
 };
