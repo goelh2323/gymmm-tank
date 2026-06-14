@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, Dumbbell } from 'lucide-react';
 
 export const WhatsAppWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,9 +8,9 @@ export const WhatsAppWidget: React.FC = () => {
   const SUPPORT_NUMBER = '919350931316'; // Official Gymmm Tank WhatsApp Number (with country code)
 
   const quickReplies = [
-    { label: '💊 Dose / Stack Advice', text: 'Hey GYMMM TANK! I need some advice on stacking supplements for my training goals. 🏋️' },
-    { label: '📦 Check Order Status', text: 'Hey GYMMM TANK! I want to check the status of my order.' },
-    { label: '🤝 Dealer / Business', text: 'Hey GYMMM TANK! I am interested in becoming a dealer/distributor.' }
+    { label: '🏋️‍♂️ PR & Stack Advice', text: 'Hey GYMMM TANK! Need professional stack advice to smash my next PR. 💪' },
+    { label: '📦 Track My Fuel', text: 'Hey GYMMM TANK! Checking status on my order.' },
+    { label: '🤝 Business & Dealership', text: 'Hey GYMMM TANK! Interested in franchise/dealership opportunities.' }
   ];
 
   const handleStartChat = (customText?: string) => {
@@ -44,7 +44,7 @@ export const WhatsAppWidget: React.FC = () => {
 
           <div className="wa-popup-body">
             <p className="wa-welcome-msg">
-              Hey builder! How can we help you crush your training goals today?
+              Hey builder! <Dumbbell size={14} className="wa-inline-icon" /> How can we help you crush your training goals today?
             </p>
 
             <div className="wa-quick-replies-list">
@@ -53,6 +53,7 @@ export const WhatsAppWidget: React.FC = () => {
                   key={idx}
                   className="wa-quick-reply-chip"
                   onClick={() => handleStartChat(reply.text)}
+                  style={{ animationDelay: `${(idx + 1) * 0.1}s` }}
                 >
                   {reply.label}
                 </button>
@@ -90,8 +91,12 @@ export const WhatsAppWidget: React.FC = () => {
         title="Chat on WhatsApp"
         aria-label="Toggle WhatsApp chat window"
       >
-        <MessageCircle size={26} className="wa-icon" />
+        <div className="wa-fab-content">
+          <MessageCircle size={28} className="wa-icon" />
+          <Dumbbell size={16} className="wa-dumbbell-overlay" />
+        </div>
         <span className="wa-fab-pulse"></span>
+        <span className="wa-fab-double-pulse"></span>
       </button>
     </div>
   );
