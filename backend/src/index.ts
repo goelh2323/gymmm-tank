@@ -80,33 +80,15 @@ let transporter: nodemailer.Transporter;
 let testEmailAccount: { user: string; pass: string } | null = null;
 
 const initEmailTransporter = async () => {
-  // Priority 1: Resend HTTP API (if RESEND_API_KEY is set)
-  if (process.env.RESEND_API_KEY) {
-    console.log('📧 Email system ready (Resend HTTP API)');
+  // Priority 1: Brevo (Sendinblue) HTTP API — works from any cloud server, bypasses port blocks, no domain needed, 300/day free
+  if (process.env.BREVO_SMTP_KEY) {
+    console.log('📧 Email system ready (Brevo HTTP API)');
     return;
   }
 
-  // Priority 2: Brevo (Sendinblue) SMTP — works from any cloud server, no domain needed, 300/day free
-  if (process.env.BREVO_SMTP_USER && process.env.BREVO_SMTP_KEY) {
-    transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.BREVO_SMTP_USER,  // your Brevo login email
-        pass: process.env.BREVO_SMTP_KEY,   // Brevo SMTP key (from Settings → SMTP & API)
-      },
-    });
-
-    transporter.verify((error: Error | null) => {
-      if (error) {
-        console.error('❌ Brevo SMTP connection FAILED:', error.message);
-      } else {
-        console.log(`✅ Brevo SMTP connected successfully (${process.env.BREVO_SMTP_USER})`);
-      }
-    });
-
-    console.log(`📧 Email transporter initialised (Brevo SMTP)`);
+  // Priority 2: Resend HTTP API (if RESEND_API_KEY is set)
+  if (process.env.RESEND_API_KEY) {
+    console.log('📧 Email system ready (Resend HTTP API)');
     return;
   }
 
@@ -155,9 +137,42 @@ const initEmailTransporter = async () => {
   console.log(`   ↳ Test inbox: https://ethereal.email/messages (login: ${testAccount.user})`);
 };
 
-// Centralized Email Sender Helper (handles both Resend HTTP API and Nodemailer fallback)
+// Centralized Email Sender Helper (handles Resend HTTP API, Brevo HTTP API and Nodemailer fallback)
 const sendEmail = async ({ to, subject, html }: { to: string; subject: string; html: string }) => {
-  if (process.env.RESEND_API_KEY) {
+  if (process.env.BREVO_SMTP_KEY) {
+    try {
+      const senderEmail = process.env.BREVO_SMTP_USER || 'transformernutritionamb@gmail.com';
+      console.log(`📧 [Brevo HTTP API] Sending to: ${to}`);
+
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': process.env.BREVO_SMTP_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: {
+            name: 'GYMMM TANK',
+            email: senderEmail,
+          },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html,
+        }),
+      });
+
+      const data = await res.json() as any;
+      if (!res.ok) {
+        throw new Error(data.message || JSON.stringify(data));
+      }
+      console.log(`✅ [Brevo HTTP API] Email sent to ${to} — MessageId: ${data.messageId || 'unknown'}`);
+      return data;
+    } catch (err: any) {
+      console.error(`❌ Brevo HTTP API send FAILED to ${to}:`, err.message);
+      throw err;
+    }
+  } else if (process.env.RESEND_API_KEY) {
     try {
       // Free tier Resend accounts are restricted to sending from onboarding@resend.dev
       const from = process.env.RESEND_FROM || 'GYMMM TANK <onboarding@resend.dev>';
@@ -188,12 +203,11 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
     }
   } else if (transporter) {
     try {
-      // Determine which sender address to use: Brevo, Gmail, or dev Ethereal
-      const senderEmail = process.env.BREVO_SMTP_USER
-        || process.env.EMAIL_USER
+      // Determine which sender address to use: Gmail or dev Ethereal
+      const senderEmail = process.env.EMAIL_USER
         || testEmailAccount?.user
         || 'noreply@gymmmtank.com';
-      const driver = process.env.BREVO_SMTP_USER ? 'Brevo' : process.env.EMAIL_USER ? 'Gmail' : 'Ethereal';
+      const driver = process.env.EMAIL_USER ? 'Gmail' : 'Ethereal';
 
       console.log(`📧 [${driver}] Sending to: ${to}`);
       const info = await transporter.sendMail({
@@ -203,7 +217,7 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
         html,
       });
 
-      if (!process.env.EMAIL_USER && !process.env.BREVO_SMTP_USER) {
+      if (!process.env.EMAIL_USER) {
         console.log(`📧 Ethereal preview: ${nodemailer.getTestMessageUrl(info)}`);
       } else {
         console.log(`✅ [${driver}] Email sent to ${to} — MessageId: ${info.messageId}`);
