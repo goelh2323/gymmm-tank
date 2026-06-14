@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Truck, Dumbbell, Award, Landmark, Mail, Phone, ExternalLink, ArrowLeft } from 'lucide-react';
+import { X, ShieldCheck, Truck, Dumbbell, Award, Landmark, Mail, Phone, ExternalLink, ArrowLeft, Check } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
 
 interface DedicatedPagesProps {
   path: string;
@@ -7,12 +8,15 @@ interface DedicatedPagesProps {
 }
 
 export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }) => {
+  const { trackOrder } = useStore();
+
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyState, setVerifyState] = useState<'idle' | 'scanning' | 'success' | 'fail'>('idle');
   const [scanProgress, setScanProgress] = useState(0);
 
   const [orderId, setOrderId] = useState('');
-  const [trackingState, setTrackingState] = useState<'idle' | 'tracking' | 'result'>('idle');
+  const [trackingState, setTrackingState] = useState<'idle' | 'tracking' | 'result' | 'invalid'>('idle');
+  const [trackedOrder, setTrackedOrder] = useState<any | null>(null);
 
   const [dealerForm, setDealerForm] = useState({ name: '', gym: '', city: '', phone: '' });
   const [dealerState, setDealerState] = useState<'idle' | 'loading' | 'success'>('idle');
@@ -24,6 +28,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
     setScanProgress(0);
     setOrderId('');
     setTrackingState('idle');
+    setTrackedOrder(null);
     setDealerForm({ name: '', gym: '', city: '', phone: '' });
     setDealerState('idle');
     window.scrollTo(0, 0);
@@ -53,15 +58,24 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
     }, 150);
   };
 
-  // Order tracking simulator
-  const handleTrack = (e: React.FormEvent) => {
+  // Actual order tracking check
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderId.trim()) return;
 
     setTrackingState('tracking');
-    setTimeout(() => {
-      setTrackingState('result');
-    }, 1200);
+    
+    // Artificial 1-second delay for premium weightlifting-load feel
+    setTimeout(async () => {
+      const order = await trackOrder(orderId.trim());
+      if (order) {
+        setTrackedOrder(order);
+        setTrackingState('result');
+      } else {
+        setTrackedOrder(null);
+        setTrackingState('invalid');
+      }
+    }, 1000);
   };
 
   // Dealer inquiry form simulator
@@ -272,11 +286,20 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                 </div>
               )}
 
-              {trackingState === 'result' && (
+              {trackingState === 'result' && trackedOrder && (
                 <div className="dp-tracking-dashboard animate-scale-up">
                   <div className="dp-tracking-meta-bar">
-                    <h4>ORDER #{orderId}</h4>
-                    <span className="dp-status-badge">SHIPPED & IN TRANSIT</span>
+                    <h4>ORDER #{trackedOrder.id.substring(0, 8).toUpperCase()}</h4>
+                    <span className="dp-status-badge">
+                      {trackedOrder.fulfillment === 'DELIVERED' ? 'DELIVERED' : trackedOrder.fulfillment === 'SHIPPED' ? 'SHIPPED & IN TRANSIT' : 'PREPPING FOR DISPATCH'}
+                    </span>
+                  </div>
+
+                  <div className="dp-receipt-box" style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
+                    <div className="dp-receipt-row"><span>Customer:</span> <strong>{trackedOrder.customerName}</strong></div>
+                    <div className="dp-receipt-row"><span>Destination:</span> <strong>{trackedOrder.city}, {trackedOrder.state} ({trackedOrder.pincode})</strong></div>
+                    <div className="dp-receipt-row"><span>Total Amount:</span> <strong className="text-gold">₹{Math.round(trackedOrder.total).toLocaleString('en-IN')}</strong></div>
+                    <div className="dp-receipt-row"><span>Payment:</span> <strong style={{ color: trackedOrder.paymentStatus === 'PAID' ? '#4caf50' : '#ffc107' }}>{trackedOrder.paymentMethod} ({trackedOrder.paymentStatus})</strong></div>
                   </div>
 
                   <div className="dp-tracking-timeline">
@@ -287,33 +310,58 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                         <p>Payment authorized and registered successfully.</p>
                       </div>
                     </div>
-                    <div className="dp-timeline-node completed">
-                      <div className="dp-node-dot">✓</div>
+                    <div className={`dp-timeline-node ${trackedOrder.fulfillment !== 'PENDING' ? 'completed' : 'active'}`}>
+                      <div className="dp-node-dot">
+                        {trackedOrder.fulfillment !== 'PENDING' ? '✓' : '•'}
+                      </div>
                       <div className="dp-node-info">
                         <h5>Prepped & Sealed</h5>
                         <p>Formulations packed with heavy-duty security seals.</p>
                       </div>
                     </div>
-                    <div className="dp-timeline-node active">
-                      <div className="dp-node-dot active-pulse">
-                        <Truck size={16} />
+                    <div className={`dp-timeline-node ${trackedOrder.fulfillment === 'DELIVERED' ? 'completed' : trackedOrder.fulfillment === 'SHIPPED' ? 'active' : 'pending'}`}>
+                      <div className={trackedOrder.fulfillment === 'SHIPPED' ? 'dp-node-dot active-pulse' : 'dp-node-dot'}>
+                        {trackedOrder.fulfillment === 'DELIVERED' ? '✓' : trackedOrder.fulfillment === 'SHIPPED' ? <Truck size={14} /> : '•'}
                       </div>
                       <div className="dp-node-info">
                         <h5>Dispatched & Shipped</h5>
                         <p>In transit via premium air shipping logs. Expected delivery: 2-3 days.</p>
                       </div>
                     </div>
-                    <div className="dp-timeline-node pending">
-                      <div className="dp-node-dot">•</div>
+                    <div className={`dp-timeline-node ${trackedOrder.fulfillment === 'DELIVERED' ? 'active' : 'pending'}`}>
+                      <div className={trackedOrder.fulfillment === 'DELIVERED' ? 'dp-node-dot active-pulse' : 'dp-node-dot'}>
+                        {trackedOrder.fulfillment === 'DELIVERED' ? <Check size={14} /> : '•'}
+                      </div>
                       <div className="dp-node-info">
                         <h5>Delivered</h5>
-                        <p>Pending carrier completion.</p>
+                        <p>Package safely delivered to your destination.</p>
                       </div>
                     </div>
                   </div>
 
-                  <button onClick={() => setTrackingState('idle')} className="dp-btn-outline-large">
+                  <button onClick={() => { setTrackingState('idle'); setTrackedOrder(null); }} className="dp-btn-outline-large">
                     TRACK ANOTHER ORDER
+                  </button>
+                </div>
+              )}
+
+              {trackingState === 'invalid' && (
+                <div className="dp-invalid-container">
+                  <div className="dp-falling-weight-wrap">
+                    <div className="dp-dust-cloud"></div>
+                    <Dumbbell className="dp-falling-weight" size={90} />
+                  </div>
+                  
+                  <div className="dp-crushed-box">
+                    <h3>CRUSHED! INVALID ORDER CODE</h3>
+                    <p>
+                      No active logs found for order ID <strong>"{orderId}"</strong> in our secure database. 
+                      Please verify your receipt logs or check for typos.
+                    </p>
+                  </div>
+
+                  <button onClick={() => setTrackingState('idle')} className="dp-btn-gold-large">
+                    TRY ANOTHER ORDER NUMBER
                   </button>
                 </div>
               )}

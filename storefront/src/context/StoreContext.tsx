@@ -97,6 +97,7 @@ interface StoreContextType {
   updateOrderStatus: (orderId: string, statusPayload: { fulfillment?: string; paymentStatus?: string }) => Promise<boolean>;
   fetchCustomerOrders: () => Promise<Order[]>;
   fetchAdminUsers: () => Promise<User[]>;
+  trackOrder: (orderId: string) => Promise<Order | null>;
   completedOrder: Order | null;
   setCompletedOrder: (order: Order | null) => void;
 }
@@ -483,6 +484,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const trackOrder = async (orderId: string): Promise<Order | null> => {
+    try {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/track`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.order;
+    } catch (err) {
+      console.error('Track order error:', err);
+      return null;
+    }
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -517,6 +530,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateOrderStatus,
         fetchCustomerOrders,
         fetchAdminUsers,
+        trackOrder,
         completedOrder,
         setCompletedOrder,
       }}

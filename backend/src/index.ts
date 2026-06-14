@@ -1082,6 +1082,44 @@ app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => 
   }
 });
 
+// Fetch a single order status publicly by orderId (for tracking page)
+app.get('/api/v1/orders/:id/track', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.trim().length < 4) {
+      return res.status(400).json({ error: 'Invalid order number' });
+    }
+
+    let order = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true }
+    });
+
+    // Support 8-character prefix match for convenience
+    if (!order && id.length === 8) {
+      const results = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT id FROM "Order" WHERE "id"::text LIKE $1`,
+        `${id.toLowerCase()}%`
+      );
+      if (results && results.length > 0) {
+        order = await prisma.order.findUnique({
+          where: { id: results[0].id },
+          include: { items: true }
+        });
+      }
+    }
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    res.json({ order });
+  } catch (error) {
+    console.error('Track order error:', error);
+    res.status(500).json({ error: 'Could not track order' });
+  }
+});
+
 // Fetch past orders for logged in customer
 app.get('/api/v1/auth/orders', authenticateUser, async (req: AuthRequest, res: Response) => {
   try {
