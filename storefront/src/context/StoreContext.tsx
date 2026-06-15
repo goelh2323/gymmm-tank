@@ -92,7 +92,8 @@ interface StoreContextType {
   customerUpdateProfile: (name: string, email: string, password?: string) => Promise<boolean>;
 
   // Orders
-  placeOrder: (orderPayload: any) => Promise<Order | null>;
+  placeOrder: (orderPayload: any) => Promise<any>;
+  verifyCashfreePayment: (orderId: string) => Promise<{ success: boolean; order?: Order; error?: string }>;
   fetchAdminOrders: (cursorId?: string) => Promise<{ orders: Order[]; nextCursor: string | null; hasNextPage: boolean }>;
   updateOrderStatus: (orderId: string, statusPayload: { fulfillment?: string; paymentStatus?: string }) => Promise<boolean>;
   fetchCustomerOrders: () => Promise<Order[]>;
@@ -386,7 +387,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const placeOrder = async (orderPayload: any): Promise<Order | null> => {
+  const placeOrder = async (orderPayload: any): Promise<any> => {
     try {
       const headers: any = { 'Content-Type': 'application/json' };
       if (customerToken) {
@@ -413,10 +414,35 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Refresh products (since stock is decremented)
       await fetchProducts();
 
-      return data.order;
+      return data;
     } catch (err: any) {
       alert(err.message || 'Checkout failed');
       return null;
+    }
+  };
+
+  const verifyCashfreePayment = async (orderId: string): Promise<any> => {
+    try {
+      const res = await fetch(`${API_BASE}/orders/cashfree-verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Payment verification failed');
+      }
+
+      if (customerToken) {
+        await fetchCustomerProfile();
+      }
+      await fetchProducts();
+
+      return data;
+    } catch (err: any) {
+      console.error('Verify Cashfree Payment error:', err.message);
+      return { success: false, error: err.message };
     }
   };
 
@@ -526,6 +552,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         customerLogout,
         customerUpdateProfile,
         placeOrder,
+        verifyCashfreePayment,
         fetchAdminOrders,
         updateOrderStatus,
         fetchCustomerOrders,

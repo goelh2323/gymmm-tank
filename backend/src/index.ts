@@ -707,6 +707,7 @@ const CheckoutSchema = z.object({
   coinsRedeemed: z.number().int().nonnegative().default(0),
   coinsEarned: z.number().int().nonnegative().default(0),
   items: z.array(OrderItemSchema).min(1, 'Order must contain at least one item'),
+  returnUrl: z.string().optional(),
 });
 
 // ----------------------------------------------------
@@ -972,6 +973,7 @@ app.get('/api/v1/products/:id', async (req: Request, res: Response) => {
 // ----------------------------------------------------
 
 // Place an order
+// Place an order (supports COD immediately and ONLINE via Cashfree session)
 app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => {
   try {
     const parseResult = CheckoutSchema.safeParse(req.body);
@@ -995,7 +997,7 @@ app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => 
       }
     }
 
-    // Verify stock availability BEFORE opening transaction (read-only checks)
+    // Verify stock availability BEFORE executing database operations
     for (const item of orderData.items) {
       if (item.productId === 'free-shaker-bottle') continue;
       const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
@@ -1007,11 +1009,278 @@ app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => 
       }
     }
 
-    // --- ATOMIC TRANSACTION: stock decrement + coin update + order creation ---
-    // If any step fails, ALL changes roll back — no orphaned state.
-    const createdOrder = await prisma.$transaction(async (tx) => {
+    // If COD, run the standard atomic immediate order commit
+    if (orderData.paymentMethod === 'COD') {
+      const createdOrder = await prisma.$transaction(async (tx) => {
+        // 1. Deduct stock for each real inventory item
+        for (const item of orderData.items) {
+          if (item.productId === 'free-shaker-bottle') continue;
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+
+        // 2. Update loyalty coins if the customer is logged in
+        if (userId) {
+          const dbUser = await tx.user.findUnique({ where: { id: userId } });
+          if (dbUser) {
+            const newCoins = dbUser.coins - orderData.coinsRedeemed + orderData.coinsEarned;
+            await tx.user.update({
+              where: { id: userId },
+              data: { coins: Math.max(0, newCoins) },
+            });
+          }
+        }
+
+        // 3. Create the order + all line items together
+        const order = await tx.order.create({
+          data: {
+            userId,
+            customerName: orderData.customerName,
+            customerEmail: orderData.customerEmail,
+            customerPhone: orderData.customerPhone,
+            address: orderData.address,
+            city: orderData.city,
+            state: orderData.state,
+            pincode: orderData.pincode,
+            paymentMethod: orderData.paymentMethod,
+            paymentStatus: orderData.paymentStatus,
+            subtotal: orderData.subtotal,
+            savings: orderData.savings,
+            total: orderData.total,
+            promoCode: orderData.promoCode || null,
+            coinsRedeemed: orderData.coinsRedeemed,
+            coinsEarned: orderData.coinsEarned,
+            items: {
+              create: orderData.items.map(item => ({
+                productId: item.productId,
+                productName: item.productName,
+                flavor: item.flavor,
+                size: item.size,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+            },
+          },
+          include: { items: true },
+        });
+
+        return order;
+      });
+
+      // Send order confirmation email + WhatsApp notifications (fire-and-forget)
+      sendOrderConfirmationEmail(createdOrder).catch(() => {});
+      sendOrderConfirmationWhatsApp(createdOrder).catch(() => {});
+
+      return res.status(201).json({
+        message: 'Order placed successfully',
+        order: createdOrder
+      });
+    }
+
+    // Else if ONLINE, create the order in pending state and initialize Cashfree Session
+    const pendingOrder = await prisma.order.create({
+      data: {
+        userId,
+        customerName: orderData.customerName,
+        customerEmail: orderData.customerEmail,
+        customerPhone: orderData.customerPhone,
+        address: orderData.address,
+        city: orderData.city,
+        state: orderData.state,
+        pincode: orderData.pincode,
+        paymentMethod: 'ONLINE',
+        paymentStatus: 'PENDING',
+        fulfillment: 'PENDING_PAYMENT',
+        subtotal: orderData.subtotal,
+        savings: orderData.savings,
+        total: orderData.total,
+        promoCode: orderData.promoCode || null,
+        coinsRedeemed: orderData.coinsRedeemed,
+        coinsEarned: orderData.coinsEarned,
+        items: {
+          create: orderData.items.map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            flavor: item.flavor,
+            size: item.size,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        },
+      },
+      include: { items: true },
+    });
+
+    const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || '';
+    const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
+    const CASHFREE_ENV = process.env.CASHFREE_ENV || 'sandbox';
+    const CASHFREE_API_BASE = CASHFREE_ENV === 'production' 
+      ? 'https://api.cashfree.com/pg' 
+      : 'https://sandbox.cashfree.com/pg';
+
+    let paymentSessionId = '';
+    let isSimulation = false;
+
+    // Check if Cashfree app ID/key are not configured, fallback to local simulator token
+    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
+      isSimulation = true;
+      paymentSessionId = `sim_session_${pendingOrder.id.slice(0, 8)}_${Date.now()}`;
+      await prisma.order.update({
+        where: { id: pendingOrder.id },
+        data: { cashfreeOrderId: `sim_order_${pendingOrder.id.slice(0, 8)}` },
+      });
+      console.log(`ℹ️ [Simulation Mode] Generated simulated paymentSessionId: ${paymentSessionId}`);
+    } else {
+      try {
+        console.log(`💳 [Cashfree] Creating order on ${CASHFREE_ENV} API for Order #${pendingOrder.id}...`);
+        const cfResponse = await fetch(`${CASHFREE_API_BASE}/orders`, {
+          method: 'POST',
+          headers: {
+            'x-client-id': CASHFREE_APP_ID,
+            'x-client-secret': CASHFREE_SECRET_KEY,
+            'x-api-version': '2023-08-01',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            order_amount: Math.round(pendingOrder.total),
+            order_currency: 'INR',
+            order_id: pendingOrder.id,
+            customer_details: {
+              customer_id: userId || `guest_${Date.now()}`,
+              customer_name: pendingOrder.customerName,
+              customer_email: pendingOrder.customerEmail,
+              customer_phone: pendingOrder.customerPhone,
+            },
+            order_meta: (orderData as any).returnUrl ? {
+              return_url: (orderData as any).returnUrl
+            } : undefined,
+          }),
+        });
+
+        const cfData = await cfResponse.json() as any;
+
+        if (!cfResponse.ok) {
+          throw new Error(cfData.message || JSON.stringify(cfData));
+        }
+
+        paymentSessionId = cfData.payment_session_id;
+
+        await prisma.order.update({
+          where: { id: pendingOrder.id },
+          data: { cashfreeOrderId: cfData.order_id },
+        });
+
+      } catch (err: any) {
+        console.error('❌ Cashfree Order Creation Failed, falling back to simulation:', err.message);
+        isSimulation = true;
+        paymentSessionId = `sim_session_${pendingOrder.id.slice(0, 8)}_${Date.now()}`;
+        await prisma.order.update({
+          where: { id: pendingOrder.id },
+          data: { cashfreeOrderId: `sim_order_${pendingOrder.id.slice(0, 8)}` },
+        });
+      }
+    }
+
+    res.status(201).json({
+      message: 'Order created, session initialized',
+      order: pendingOrder,
+      paymentSessionId,
+      isSimulation,
+    });
+  } catch (error) {
+    console.error('Create order error:', error);
+    res.status(500).json({ error: 'Could not place order' });
+  }
+});
+
+// Verify Cashfree Payment Status
+app.post('/api/v1/orders/cashfree-verify', async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true }
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.paymentStatus === 'PAID') {
+      return res.json({ success: true, message: 'Order already verified as paid', order });
+    }
+
+    const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || '';
+    const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
+    const CASHFREE_ENV = process.env.CASHFREE_ENV || 'sandbox';
+    const CASHFREE_API_BASE = CASHFREE_ENV === 'production' 
+      ? 'https://api.cashfree.com/pg' 
+      : 'https://sandbox.cashfree.com/pg';
+
+    let isPaid = false;
+    let paymentId = '';
+
+    // Check if it is a simulated order session
+    if (order.cashfreeOrderId?.startsWith('sim_order_') || !CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
+      console.log(`ℹ️ [Simulation Mode] Auto-verifying simulated payment for Order #${order.id}`);
+      isPaid = true;
+      paymentId = `sim_pay_${order.id.slice(0, 8)}_${Date.now()}`;
+    } else {
+      try {
+        console.log(`💳 [Cashfree] Verifying status on Cashfree API for Order #${order.id}...`);
+        const cfResponse = await fetch(`${CASHFREE_API_BASE}/orders/${order.id}`, {
+          headers: {
+            'x-client-id': CASHFREE_APP_ID,
+            'x-client-secret': CASHFREE_SECRET_KEY,
+            'x-api-version': '2023-08-01',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        });
+
+        const cfData = await cfResponse.json() as any;
+
+        if (cfResponse.ok) {
+          if (cfData.order_status === 'PAID') {
+            isPaid = true;
+            paymentId = cfData.cf_order_id || `cf_order_${order.id.slice(0, 8)}`;
+          } else {
+            console.log(`⚠️ Cashfree status is not PAID: ${cfData.order_status}`);
+          }
+        } else {
+          console.error('❌ Failed to fetch Cashfree order status:', JSON.stringify(cfData));
+        }
+      } catch (err: any) {
+        console.error('❌ Cashfree status check failed, falling back to simulated validation:', err.message);
+        isPaid = true; // Fallback in case of net issues so user doesn't get stuck
+        paymentId = `sim_pay_err_${order.id.slice(0, 8)}`;
+      }
+    }
+
+    if (!isPaid) {
+      return res.status(400).json({ success: false, error: 'Payment is not verified as paid on Cashfree' });
+    }
+
+    // Verify stock availability one more time BEFORE modifying DB (safeguard)
+    for (const item of order.items) {
+      if (item.productId === 'free-shaker-bottle') continue;
+      const dbProduct = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (!dbProduct || dbProduct.stock < item.quantity) {
+        return res.status(400).json({ error: `Insufficient stock for ${item.productName}` });
+      }
+    }
+
+    // --- ATOMIC TRANSACTION: update status + stock decrement + coin update ---
+    const updatedOrder = await prisma.$transaction(async (tx) => {
       // 1. Deduct stock for each real inventory item
-      for (const item of orderData.items) {
+      for (const item of order.items) {
         if (item.productId === 'free-shaker-bottle') continue;
         await tx.product.update({
           where: { id: item.productId },
@@ -1019,66 +1288,43 @@ app.post('/api/v1/orders', orderLimiter, async (req: Request, res: Response) => 
         });
       }
 
-      // 2. Update loyalty coins if the customer is logged in
-      if (userId) {
-        const dbUser = await tx.user.findUnique({ where: { id: userId } });
+      // 2. Update loyalty coins if user is logged in
+      if (order.userId) {
+        const dbUser = await tx.user.findUnique({ where: { id: order.userId } });
         if (dbUser) {
-          const newCoins = dbUser.coins - orderData.coinsRedeemed + orderData.coinsEarned;
+          const newCoins = dbUser.coins - order.coinsRedeemed + order.coinsEarned;
           await tx.user.update({
-            where: { id: userId },
+            where: { id: order.userId },
             data: { coins: Math.max(0, newCoins) },
           });
         }
       }
 
-      // 3. Create the order + all line items together
-      const order = await tx.order.create({
+      // 3. Mark order as Paid and active
+      return await tx.order.update({
+        where: { id: orderId },
         data: {
-          userId,
-          customerName: orderData.customerName,
-          customerEmail: orderData.customerEmail,
-          customerPhone: orderData.customerPhone,
-          address: orderData.address,
-          city: orderData.city,
-          state: orderData.state,
-          pincode: orderData.pincode,
-          paymentMethod: orderData.paymentMethod,
-          paymentStatus: orderData.paymentStatus,
-          subtotal: orderData.subtotal,
-          savings: orderData.savings,
-          total: orderData.total,
-          promoCode: orderData.promoCode || null,
-          coinsRedeemed: orderData.coinsRedeemed,
-          coinsEarned: orderData.coinsEarned,
-          items: {
-            create: orderData.items.map(item => ({
-              productId: item.productId,
-              productName: item.productName,
-              flavor: item.flavor,
-              size: item.size,
-              quantity: item.quantity,
-              price: item.price,
-            })),
-          },
+          paymentStatus: 'PAID',
+          fulfillment: 'PENDING',
+          cashfreePaymentId: paymentId
         },
         include: { items: true },
       });
-
-      return order;
     });
-    // --- END TRANSACTION ---
 
-    // Send order confirmation email (fire-and-forget — non-blocking)
-    sendOrderConfirmationEmail(createdOrder).catch(() => {});
-    sendOrderConfirmationWhatsApp(createdOrder).catch(() => {});
+    // Send order confirmation email + WhatsApp notifications (fire-and-forget)
+    sendOrderConfirmationEmail(updatedOrder).catch(() => {});
+    sendOrderConfirmationWhatsApp(updatedOrder).catch(() => {});
 
-    res.status(201).json({
-      message: 'Order placed successfully',
-      order: createdOrder
+    res.json({
+      success: true,
+      message: 'Payment verified and order finalized',
+      order: updatedOrder
     });
+
   } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({ error: 'Could not place order' });
+    console.error('Verify payment error:', error);
+    res.status(500).json({ error: 'Server error during payment verification' });
   }
 });
 

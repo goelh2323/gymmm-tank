@@ -8,7 +8,7 @@ interface DedicatedPagesProps {
 }
 
 export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }) => {
-  const { trackOrder } = useStore();
+  const { trackOrder, verifyCashfreePayment } = useStore();
 
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyState, setVerifyState] = useState<'idle' | 'scanning' | 'success' | 'fail'>('idle');
@@ -21,17 +21,46 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
   const [dealerForm, setDealerForm] = useState({ name: '', gym: '', city: '', phone: '' });
   const [dealerState, setDealerState] = useState<'idle' | 'loading' | 'success'>('idle');
 
-  // Reset states on path change
+  // Reset states on path change and read orderId from URL
   useEffect(() => {
     setVerificationCode('');
     setVerifyState('idle');
     setScanProgress(0);
-    setOrderId('');
-    setTrackingState('idle');
-    setTrackedOrder(null);
     setDealerForm({ name: '', gym: '', city: '', phone: '' });
     setDealerState('idle');
     window.scrollTo(0, 0);
+
+    const params = new URLSearchParams(window.location.search);
+    const urlOrderId = params.get('orderId') || params.get('order_id');
+    
+    if (path === '/track' && urlOrderId) {
+      setOrderId(urlOrderId.toUpperCase());
+      setTrackingState('tracking');
+      
+      const checkPaymentOnMount = async () => {
+        let order = await trackOrder(urlOrderId.trim());
+        if (order) {
+          if (order.paymentMethod === 'ONLINE' && order.paymentStatus === 'PENDING') {
+            console.log('Verifying pending Cashfree payment on query mount...');
+            const verification = await verifyCashfreePayment(order.id);
+            if (verification && verification.success && verification.order) {
+              order = verification.order;
+            }
+          }
+          setTrackedOrder(order);
+          setTrackingState('result');
+        } else {
+          setTrackedOrder(null);
+          setTrackingState('invalid');
+        }
+      };
+      
+      checkPaymentOnMount();
+    } else {
+      setOrderId('');
+      setTrackingState('idle');
+      setTrackedOrder(null);
+    }
   }, [path]);
 
   // Product verification scanner simulator
@@ -67,8 +96,15 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
     
     // Artificial 1-second delay for premium weightlifting-load feel
     setTimeout(async () => {
-      const order = await trackOrder(orderId.trim());
+      let order = await trackOrder(orderId.trim());
       if (order) {
+        if (order.paymentMethod === 'ONLINE' && order.paymentStatus === 'PENDING') {
+          console.log('Verifying pending Cashfree payment on track submit...');
+          const verification = await verifyCashfreePayment(order.id);
+          if (verification && verification.success && verification.order) {
+            order = verification.order;
+          }
+        }
         setTrackedOrder(order);
         setTrackingState('result');
       } else {

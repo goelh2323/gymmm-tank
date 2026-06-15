@@ -48,9 +48,11 @@ model Order {
   city           String
   state          String
   pincode        String
-  paymentMethod  String      // COD, UPI, CARD
-  paymentStatus  String      @default("PENDING") // PENDING, PAID
-  fulfillment    String      @default("PENDING") // PENDING, SHIPPED, DELIVERED
+  paymentMethod     String      // COD, UPI, CARD
+  paymentStatus     String      @default("PENDING") // PENDING, PAID
+  fulfillment       String      @default("PENDING") // PENDING, SHIPPED, DELIVERED
+  cashfreeOrderId   String?
+  cashfreePaymentId String?
   subtotal       Float
   savings        Float
   total          Float

@@ -9,11 +9,11 @@ import {
   ShoppingBag,
   Truck,
   CreditCard,
-  QrCode,
   Gift,
   Coins,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Dumbbell
 } from 'lucide-react';
 
 export const CartDrawer: React.FC = () => {
@@ -29,7 +29,8 @@ export const CartDrawer: React.FC = () => {
     clearCart,
   } = useCart();
 
-  const { customerUser, placeOrder, setCompletedOrder } = useStore();
+  const { customerUser, placeOrder, verifyCashfreePayment, setCompletedOrder } = useStore();
+  const [simulatedPaymentOrder, setSimulatedPaymentOrder] = useState<any | null>(null);
 
   const formatPrice = (num: number) => {
     return '₹' + Math.round(num).toLocaleString('en-IN');
@@ -58,17 +59,7 @@ export const CartDrawer: React.FC = () => {
   const [shipPincode, setShipPincode] = useState('');
 
   // Payment Selection Fields
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'UPI' | 'CARD'>('COD');
-
-  // Interactive Card States
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardFocused, setCardFocused] = useState<'front' | 'back'>('front');
-
-  // Timed UPI States
-  const [upiTimer, setUpiTimer] = useState(180); // 3 minutes
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'ONLINE'>('COD');
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -99,20 +90,17 @@ export const CartDrawer: React.FC = () => {
     }
   }, [customerUser]);
 
-  // UPI Countdown Timer
+  // Load Cashfree SDK dynamically
   useEffect(() => {
-    let interval: any;
-    if (step === 3 && paymentMethod === 'UPI' && upiTimer > 0) {
-      interval = setInterval(() => {
-        setUpiTimer(prev => prev - 1);
-      }, 1000);
-    } else if (upiTimer === 0) {
-      alert('UPI scan window expired. Please try again or select another payment method.');
-      setPaymentMethod('COD');
-      setUpiTimer(180);
+    const existingScript = document.getElementById('cashfree-sdk-script');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.id = 'cashfree-sdk-script';
+      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+      script.async = true;
+      document.body.appendChild(script);
     }
-    return () => clearInterval(interval);
-  }, [step, paymentMethod, upiTimer]);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -188,13 +176,6 @@ export const CartDrawer: React.FC = () => {
   const handlePlaceOrderSubmit = async () => {
     if (placingOrder) return;
 
-    // If credit card selected, validate digits
-    if (paymentMethod === 'CARD') {
-      if (cardNumber.replace(/\s+/g, '').length < 16 || cardExpiry.length < 5 || cardCvv.length < 3) {
-        return alert('Please enter valid credit card details.');
-      }
-    }
-
     const itemsPayload = cartItems.map(item => ({
       productId: item.product.id,
       productName: item.product.name,
@@ -225,7 +206,8 @@ export const CartDrawer: React.FC = () => {
       state: shipState.trim(),
       pincode: shipPincode.trim(),
       paymentMethod,
-      paymentStatus: paymentMethod === 'COD' ? 'PENDING' : 'PAID',
+      paymentStatus: 'PENDING',
+      returnUrl: `${window.location.origin}/track?orderId={order_id}`,
       subtotal: totalRegularPrice,
       savings: Math.round(totalSavings + promoDiscount + coinsRedeemed),
       total: Math.round(finalTotal),
@@ -239,13 +221,23 @@ export const CartDrawer: React.FC = () => {
     try {
       const orderResult = await placeOrder(orderPayload);
       if (orderResult) {
-        setCompletedOrder(orderResult);
-        clearCart();
-        setIsOpen(false); // Close the side drawer so the user sees the center invoice modal
-        setStep(1);
+        if (orderResult.isSimulation) {
+          setSimulatedPaymentOrder(orderResult);
+        } else {
+          const CashfreeSDK = (window as any).Cashfree;
+          if (!CashfreeSDK) {
+            throw new Error('Cashfree SDK failed to load. Please check your internet connection.');
+          }
+          const cashfree = CashfreeSDK({ mode: import.meta.env.VITE_CASHFREE_ENV || 'sandbox' });
+          await cashfree.checkout({
+            paymentSessionId: orderResult.paymentSessionId,
+            redirectTarget: '_modal'
+          });
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error placing order:', err);
+      alert(err.message || 'Checkout failed');
     } finally {
       setPlacingOrder(false);
     }
@@ -599,8 +591,8 @@ export const CartDrawer: React.FC = () => {
             {step === 3 && (
               <div className="checkout-step-content payment-step">
                 
-                {/* Method Toggles */}
-                <div className="payment-method-selector">
+                {/* Method                 {/* Method Toggles */}
+                <div className="payment-method-selector" style={{ gridTemplateColumns: '1fr 1fr' }}>
                   <button 
                     className={`payment-selector-btn ${paymentMethod === 'COD' ? 'active' : ''}`}
                     onClick={() => setPaymentMethod('COD')}
@@ -609,18 +601,11 @@ export const CartDrawer: React.FC = () => {
                     Cash On Delivery
                   </button>
                   <button 
-                    className={`payment-selector-btn ${paymentMethod === 'UPI' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('UPI')}
-                  >
-                    <QrCode size={18} />
-                    Scan UPI QR
-                  </button>
-                  <button 
-                    className={`payment-selector-btn ${paymentMethod === 'CARD' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('CARD')}
+                    className={`payment-selector-btn ${paymentMethod === 'ONLINE' ? 'active' : ''}`}
+                    onClick={() => setPaymentMethod('ONLINE')}
                   >
                     <CreditCard size={18} />
-                    Credit/Debit Card
+                    Pay Online
                   </button>
                 </div>
 
@@ -639,170 +624,27 @@ export const CartDrawer: React.FC = () => {
                   </div>
                 )}
 
-                {/* UPI QR Panel */}
-                {paymentMethod === 'UPI' && (
-                  <div className="payment-panel upi-panel animate-fade-in">
-                    <h3>Scan QR Code to Pay</h3>
-                    <p className="upi-desc">Scan using Google Pay, PhonePe, Paytm or any banking app to trigger a secure simulation.</p>
-                    
-                    {/* Simulated QR Code SVG */}
-                    <div className="upi-qr-wrapper">
-                      <svg className="upi-qr-graphic animate-float" viewBox="0 0 100 100" width="160" height="160">
-                        <rect width="100" height="100" fill="#ffffff" />
-                        {/* QR Code Anchor Squares */}
-                        <rect x="5" y="5" width="20" height="20" fill="var(--bg-black)" />
-                        <rect x="9" y="9" width="12" height="12" fill="#ffffff" />
-                        <rect x="11" y="11" width="8" height="8" fill="var(--bg-black)" />
-
-                        <rect x="75" y="5" width="20" height="20" fill="var(--bg-black)" />
-                        <rect x="79" y="9" width="12" height="12" fill="#ffffff" />
-                        <rect x="81" y="81" width="8" height="8" fill="var(--bg-black)" />
-
-                        <rect x="5" y="75" width="20" height="20" fill="var(--bg-black)" />
-                        <rect x="9" y="79" width="12" height="12" fill="#ffffff" />
-                        <rect x="11" y="81" width="8" height="8" fill="var(--bg-black)" />
-                        
-                        <rect x="75" y="75" width="20" height="20" fill="var(--bg-black)" />
-                        <rect x="79" y="79" width="12" height="12" fill="#ffffff" />
-
-                        {/* Random barcode grids to represent code data */}
-                        <rect x="30" y="10" width="5" height="15" fill="var(--bg-black)" />
-                        <rect x="40" y="5" width="10" height="5" fill="var(--bg-black)" />
-                        <rect x="35" y="25" width="15" height="5" fill="var(--bg-black)" />
-                        <rect x="60" y="15" width="5" height="20" fill="var(--bg-black)" />
-                        
-                        <rect x="15" y="35" width="25" height="5" fill="var(--bg-black)" />
-                        <rect x="10" y="45" width="15" height="10" fill="var(--bg-black)" />
-                        <rect x="40" y="40" width="5" height="20" fill="var(--bg-black)" />
-                        <rect x="55" y="35" width="15" height="5" fill="var(--bg-black)" />
-                        
-                        <rect x="60" y="45" width="25" height="5" fill="var(--bg-black)" />
-                        <rect x="70" y="55" width="10" height="15" fill="var(--bg-black)" />
-                        <rect x="30" y="70" width="15" height="10" fill="var(--bg-black)" />
-                        <rect x="50" y="75" width="15" height="5" fill="var(--bg-black)" />
-                        
-                        {/* Gym logo in center of QR */}
-                        <circle cx="50" cy="50" r="10" fill="var(--gold-primary)" />
-                        <path d="M47 50h6M50 47v6" stroke="#000000" strokeWidth="2" />
-                      </svg>
-                      
-                      <div className="upi-timer-badge">
-                        ⌛ {Math.floor(upiTimer / 60)}:{(upiTimer % 60).toString().padStart(2, '0')}
-                      </div>
-                    </div>
-
-                    <div className="invoice-details" style={{ marginTop: '0.8rem' }}>
-                      <div className="invoice-row">
-                        <span className="text-muted">Total Payment Amount:</span>
-                        <span className="text-gold font-bold">{formatPrice(finalTotal)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Credit Card Panel */}
-                {paymentMethod === 'CARD' && (
-                  <div className="payment-panel card-panel animate-fade-in">
-                    
-                    {/* Interactive 3D Card Graphic */}
-                    <div className="credit-card-container-wrap">
-                      <div className={`interactive-credit-card ${cardFocused === 'back' ? 'flipped' : ''}`}>
-                        
-                        {/* Front Side */}
-                        <div className="card-face card-front">
-                          <div className="card-gold-glow"></div>
-                          <div className="card-header-logo-row">
-                            <span className="card-brand-label">GYMMM TANK SECURE</span>
-                            <div className="card-chip"></div>
-                          </div>
-                          <div className="card-number-display">
-                            {cardNumber || '•••• •••• •••• ••••'}
-                          </div>
-                          <div className="card-footer-details">
-                            <div className="card-holder-wrap">
-                              <span className="card-label-sub">CARDHOLDER</span>
-                              <span className="card-value-display">{cardHolder.toUpperCase() || 'YOUR NAME'}</span>
-                            </div>
-                            <div className="card-expiry-wrap">
-                              <span className="card-label-sub">EXPIRES</span>
-                              <span className="card-value-display">{cardExpiry || 'MM/YY'}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Back Side */}
-                        <div className="card-face card-back">
-                          <div className="card-black-strip"></div>
-                          <div className="card-signature-strip">
-                            <span className="card-label-sub card-back-cvv-label">CVV</span>
-                            <span className="card-cvv-display">{cardCvv || '•••'}</span>
-                          </div>
-                          <p className="card-back-text">This credit card simulator is encrypted. Authorization is fully simulated.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Form Fields */}
-                    <div className="card-input-form">
-                      <div className="form-group">
-                        <label>Card Number</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. 4321 5678 9012 3456"
-                          maxLength={19}
-                          value={cardNumber}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, '');
-                            const formatted = val.replace(/(.{4})/g, '$1 ').trim();
-                            setCardNumber(formatted);
-                          }}
-                          onFocus={() => setCardFocused('front')}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Cardholder Name</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. JOHN DOE"
-                          value={cardHolder}
-                          onChange={(e) => setCardHolder(e.target.value)}
-                          onFocus={() => setCardFocused('front')}
-                          required
-                        />
-                      </div>
-                      <div className="form-row">
-                        <div className="form-group">
-                          <label>Expiry Date</label>
-                          <input
-                            type="text"
-                            placeholder="MM/YY"
-                            maxLength={5}
-                            value={cardExpiry}
-                            onChange={(e) => {
-                              let val = e.target.value.replace(/\D/g, '');
-                              if (val.length > 2) {
-                                val = val.substring(0, 2) + '/' + val.substring(2, 4);
-                              }
-                              setCardExpiry(val);
-                            }}
-                            onFocus={() => setCardFocused('front')}
-                            required
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>CVV Code</label>
-                          <input
-                            type="password"
-                            placeholder="•••"
-                            maxLength={3}
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                            onFocus={() => setCardFocused('back')}
-                            onBlur={() => setCardFocused('front')}
-                            required
-                          />
-                        </div>
+                {/* ONLINE Panel */}
+                {paymentMethod === 'ONLINE' && (
+                  <div className="payment-panel online-panel animate-fade-in" style={{
+                    textAlign: 'center',
+                    padding: '24px',
+                    backgroundColor: '#121212',
+                    border: '1px solid #221c0e',
+                    borderRadius: '8px',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    <div className="panel-icon-center" style={{ fontSize: '36px', marginBottom: '12px' }}>💳</div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>
+                      Cashfree Payments Secure Gateway
+                    </h3>
+                    <p style={{ fontSize: '0.85rem', color: '#aaaaaa', lineHeight: 1.5, marginBottom: '20px' }}>
+                      Pay securely using Credit/Debit Card, UPI (Google Pay, PhonePe, Paytm), Net Banking, or popular Mobile Wallets.
+                    </p>
+                    <div className="invoice-details" style={{ borderTop: '1px solid #221c0e', paddingTop: '15px' }}>
+                      <div className="invoice-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
+                        <span className="text-muted" style={{ color: '#888888' }}>Total Payable Now:</span>
+                        <span className="text-gold font-bold" style={{ color: '#d4af37', fontWeight: 700 }}>{formatPrice(finalTotal)}</span>
                       </div>
                     </div>
                   </div>
@@ -826,6 +668,164 @@ export const CartDrawer: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      
+      {/* Simulated Cashfree Gateway Overlay */}
+      {simulatedPaymentOrder && (
+        <div className="simulated-pg-overlay animate-fade-in" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="simulated-pg-card" style={{
+            backgroundColor: '#0c0c0c',
+            border: '2px solid #d4af37',
+            borderRadius: '12px',
+            maxWidth: '450px',
+            width: '100%',
+            padding: '30px',
+            boxShadow: '0 10px 30px rgba(212, 175, 55, 0.15)',
+            textAlign: 'center',
+            fontFamily: "'Montserrat', sans-serif",
+            color: '#ffffff',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-50px',
+              right: '-50px',
+              width: '150px',
+              height: '150px',
+              background: 'radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%)',
+              zIndex: 0
+            }}></div>
+            
+            <div style={{ zIndex: 1, position: 'relative' }}>
+              <div style={{ fontSize: '48px', marginBottom: '15px' }}>🛡️</div>
+              <h3 style={{
+                fontSize: '1.4rem',
+                fontWeight: 800,
+                letterSpacing: '2px',
+                color: '#d4af37',
+                textTransform: 'uppercase',
+                margin: '0 0 10px 0'
+              }}>
+                CASHFREE SECURE SIMULATOR
+              </h3>
+              <p style={{
+                fontSize: '0.85rem',
+                color: '#888888',
+                marginBottom: '25px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}>
+                Simulation Sandbox Mode
+              </p>
+
+              <div style={{
+                backgroundColor: '#121212',
+                border: '1px solid #221c0e',
+                borderRadius: '8px',
+                padding: '20px',
+                marginBottom: '30px',
+                textAlign: 'left'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem' }}>
+                  <span style={{ color: '#aaaaaa' }}>Order Ref:</span>
+                  <span style={{ fontWeight: 600 }}>#{simulatedPaymentOrder.order.id.slice(0, 8).toUpperCase()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9rem' }}>
+                  <span style={{ color: '#aaaaaa' }}>Customer Name:</span>
+                  <span style={{ fontWeight: 600 }}>{simulatedPaymentOrder.order.customerName}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #221c0e', paddingTop: '10px', fontSize: '1.05rem' }}>
+                  <span style={{ color: '#d4af37', fontWeight: 700 }}>Total Payable:</span>
+                  <span style={{ color: '#d4af37', fontWeight: 800 }}>₹{Math.round(simulatedPaymentOrder.order.total).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button
+                  onClick={async () => {
+                    setPlacingOrder(true);
+                    try {
+                      const verification = await verifyCashfreePayment(simulatedPaymentOrder.order.id);
+                      if (verification && verification.success && verification.order) {
+                        setCompletedOrder(verification.order);
+                        clearCart();
+                        setSimulatedPaymentOrder(null);
+                        setIsOpen(false);
+                        setStep(1);
+                      } else {
+                        alert('Simulated payment verification failed.');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                    } finally {
+                      setPlacingOrder(false);
+                    }
+                  }}
+                  className="checkout-btn"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    background: 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)',
+                    border: 'none',
+                    boxShadow: '0 4px 15px rgba(34, 197, 94, 0.2)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Dumbbell size={16} className="animate-spin-slow" />
+                  Simulate Success (Pay Now)
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSimulatedPaymentOrder(null);
+                    alert('Simulated payment cancelled.');
+                  }}
+                  className="back-btn"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ef4444',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'transparent',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel Transaction
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
