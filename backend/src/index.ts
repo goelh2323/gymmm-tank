@@ -934,8 +934,8 @@ app.get('/api/v1/products', async (req: Request, res: Response) => {
 
     if (search) {
       whereClause.OR = [
-        { name: { contains: String(search) } },
-        { description: { contains: String(search) } },
+        { name: { contains: String(search), mode: 'insensitive' } },
+        { description: { contains: String(search), mode: 'insensitive' } },
       ];
     }
 

@@ -221,7 +221,11 @@ export const CartDrawer: React.FC = () => {
     try {
       const orderResult = await placeOrder(orderPayload);
       if (orderResult) {
-        if (orderResult.isSimulation) {
+        if (paymentMethod === 'COD') {
+          setCompletedOrder(orderResult.order);
+          clearCart();
+          handleCloseCheckout();
+        } else if (orderResult.isSimulation) {
           setSimulatedPaymentOrder(orderResult);
         } else {
           const CashfreeSDK = (window as any).Cashfree;
