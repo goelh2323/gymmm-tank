@@ -3758,12 +3758,12 @@ body {
 }
 
 .brand-logo-img-v2 {
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
   border-radius: 50%;
   border: 2.5px solid var(--gold-primary);
-  box-shadow: 0 0 18px var(--gold-glow-strong);
+  box-shadow: 0 0 20px var(--gold-glow-strong);
   transition: var(--transition-smooth);
   animation: premiumLogoGlow 3s infinite ease-in-out;
 }
@@ -3779,13 +3779,16 @@ body {
   font-weight: 900;
   display: flex;
   flex-direction: column;
-  line-height: 1.05;
+  line-height: 1.0;
   text-transform: uppercase;
-  justify-content: center;
+  justify-content: space-between;
+  height: 90px;
+  padding: 4px 0;
+  box-sizing: border-box;
 }
 
 .brand-title-main {
-  font-size: 1.65rem;
+  font-size: 2.05rem;
   letter-spacing: 2.2px;
   background: linear-gradient(90deg, #d4af37 0%, #fff0b3 25%, #d4af37 50%, #fff0b3 75%, #d4af37 100%);
   background-size: 200% auto;
@@ -3796,10 +3799,9 @@ body {
 }
 
 .brand-title-sub {
-  font-size: 0.7rem;
-  letter-spacing: 7.6px;
+  font-size: 0.88rem;
+  letter-spacing: 9px;
   font-weight: 800;
-  margin-top: 1px;
   background: linear-gradient(90deg, #a8a8a8 0%, #ffffff 25%, #a8a8a8 50%, #ffffff 75%, #a8a8a8 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -7771,12 +7773,20 @@ body {
 @media (max-width: 480px) {
   /* Header scale refinements */
   .brand-logo-img-v2 {
-    width: 38px !important;
-    height: 38px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
   .brand-text-v2 {
-    font-size: 1.35rem !important;
+    height: 44px !important;
+    padding: 1px 0 !important;
+  }
+  .brand-title-main {
+    font-size: 1.05rem !important;
     letter-spacing: 1px !important;
+  }
+  .brand-title-sub {
+    font-size: 0.45rem !important;
+    letter-spacing: 4.8px !important;
   }
 
   /* Hero adjustments for smaller devices */
