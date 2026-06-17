@@ -177,7 +177,7 @@ const InteractiveStackBuilder: React.FC = () => {
       const size = product.sizes.split(',')[0]?.trim() || 'Default';
       addToCart(product, flavor, size, 1);
     });
-    alert('GYMMM TANK Stack successfully compiled and added to your Cart! Stack savings applied!');
+    alert('Power Tank Stack successfully compiled and added to your Cart! Stack savings applied!');
   };
 
   const liquidHeightPercent = Math.min((selectedIds.length / 4) * 80 + 10, 85);
@@ -697,7 +697,7 @@ const StoreFAQs: React.FC = () => {
 
   const faqs = [
     {
-      question: "Are All GYMMM TANK Supplements Genuine And Tested?",
+      question: "Are All Power Tank Nutrition Supplements Genuine And Tested?",
       answer: "Yes! Every product we sell is 100% authentic and sourced directly from verified manufacturers. Each batch undergoes strict quality checks and lab testing to ensure purity, safety, and effectiveness."
     },
     {
@@ -705,7 +705,7 @@ const StoreFAQs: React.FC = () => {
       answer: "You can use our interactive Stack Builder to compile a personalized supplement bundle matching your targets, or check out our pre-packaged Combos for common fitness goals."
     },
     {
-      question: "Can I Combine Multiple GYMMM TANK Products?",
+      question: "Can I Combine Multiple Power Tank Nutrition Products?",
       answer: "Yes! Combining products is highly common for building comprehensive stacks (e.g. Pre-workout + Creatine + Isolate Whey). We recommend checking our pre-packaged combos or utilizing the Stack Builder to design a synergistic routine."
     },
     {
@@ -714,7 +714,7 @@ const StoreFAQs: React.FC = () => {
     },
     {
       question: "What Should I Do If I Receive A Damaged Or Incorrect Product?",
-      answer: "Please contact our support team immediately at support@gymmmtank.com or call 9350931316 with your order number and photo evidence. We will arrange a replacement or refund within 24-48 hours."
+      answer: "Please contact our support team immediately at support@powertanknutrition.com or call 9350931316 with your order number and photo evidence. We will arrange a replacement or refund within 24-48 hours."
     }
   ];
 
@@ -752,7 +752,7 @@ const TestimonialsCarousel: React.FC = () => {
     {
       name: "Rohan Sharma",
       role: "Competitive Powerlifter",
-      quote: "GYMMM TANK Citrulline and Pre-workout are absolute game changers. The pumps are skin-splitting and my focus is dialed in. No crash at all!",
+      quote: "Power Tank Nutrition Citrulline and Pre-workout are absolute game changers. The pumps are skin-splitting and my focus is dialed in. No crash at all!",
       rating: 5,
       goal: "Muscle Building",
       image: "/images/pre_workout.png"
@@ -790,7 +790,7 @@ const TestimonialsCarousel: React.FC = () => {
         ATHLETE TRANSFORMATION REVIEWS
       </h2>
       <p className="section-subtitle-combos" style={{ textAlign: 'center', marginBottom: '2.2rem' }}>
-        See how elite builders and athletes fuel their training goals with GYMMM TANK.
+        See how elite builders and athletes fuel their training goals with Power Tank Nutrition.
       </p>
 
       <div className="testimonials-slider-container">
@@ -948,7 +948,7 @@ const StorefrontView: React.FC<StorefrontViewProps> = ({ onViewProductDetail, on
             }
           }}
         >
-          <span className="title-white">GYMMM TANK</span> <span className="title-gold">FORCES</span>
+          <span className="title-white">POWER TANK</span> <span className="title-gold">NUTRITION</span>
           <div className="tank-mode-badge-wrap">
             <span className="tank-mode-badge">{tankMode ? '🔥 TANK MODE ACTIVE 🔥' : '⚡ CLICK TO TRIGGER TANK MODE ⚡'}</span>
           </div>
@@ -1081,7 +1081,7 @@ const StorefrontView: React.FC<StorefrontViewProps> = ({ onViewProductDetail, on
           <div className="no-products" style={{ borderStyle: 'solid' }}>
             <RotateCcw className="no-products-icon" style={{ animation: 'spin 2s linear infinite' }} />
             <h3>Loading Supplements...</h3>
-            <p>Accessing the GYMMM TANK vault...</p>
+            <p>Accessing the Power Tank Nutrition vault...</p>
           </div>
         ) : error ? (
           <div className="no-products" style={{ borderColor: 'var(--accent-red)' }}>
@@ -1324,7 +1324,7 @@ const LayoutWrapper: React.FC = () => {
           <div className="footer-help-contact">
             <span className="help-contact-title">NEED HELP? CONTACT US.</span>
             <div className="help-links-row">
-              <a href="mailto:support@gymmmtank.com" className="contact-link">support@gymmmtank.com</a>
+              <a href="mailto:support@powertanknutrition.com" className="contact-link">support@powertanknutrition.com</a>
               <span className="contact-divider">|</span>
               <a href="tel:9350931316" className="contact-link">9350931316</a>
             </div>
@@ -1356,9 +1356,9 @@ const LayoutWrapper: React.FC = () => {
           {/* Left Block (Brand & Info) */}
           <div className="footer-brand-column">
             <div className="footer-logo-brand">
-              <img src="/images/logo.png" alt="GYMMM TANK Logo" className="footer-v2-logo" onError={(e) => { (e.target as HTMLImageElement).src = '/images/logo.jpg' }} />
+              <img src="/images/logo.png" alt="Power Tank Nutrition Logo" className="footer-v2-logo" onError={(e) => { (e.target as HTMLImageElement).src = '/images/logo.jpg' }} />
               <span className="footer-v2-brand-text">
-                <span className="brand-white">GYMMM</span>
+                <span className="brand-white">POWER</span>
                 <span className="brand-gold">TANK</span>
               </span>
             </div>
@@ -1372,7 +1372,7 @@ const LayoutWrapper: React.FC = () => {
           {/* Right Block (Newsletter & Socials) */}
           <div className="footer-newsletter-column">
             <h4 className="newsletter-title">SIGN UP TO OUR NEWSLETTER AND GET 10% OFF YOUR FIRST ORDER</h4>
-            <form className="footer-newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Subscribed to GYMMM TANK Newsletter!'); }}>
+            <form className="footer-newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Subscribed to Power Tank Nutrition Newsletter!'); }}>
               <input type="email" placeholder="Email address" className="newsletter-input" required />
               <button type="submit" className="newsletter-submit-btn">
                 SIGN UP <span className="arrow-icon">→</span>
@@ -1416,7 +1416,7 @@ const LayoutWrapper: React.FC = () => {
 
         {/* Copyright */}
         <div className="footer-v2-copyright">
-          © {new Date().getFullYear()} GYMMM TANK Supplements Ltd. All rights reserved.
+          © {new Date().getFullYear()} Power Tank Nutrition Ltd. All rights reserved.
         </div>
       </footer>
       <WhatsAppWidget />

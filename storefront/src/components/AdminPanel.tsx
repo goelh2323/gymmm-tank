@@ -678,9 +678,9 @@ export const AdminPanel: React.FC = () => {
 
             <!-- Middle Panel -->
             <div class="print-panel panel-middle">
-              <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK" class="label-logo-img" />
+              <img src="/images/logo.png" alt="Power Tank Nutrition" class="label-logo-img" />
               <div class="label-brand-heading">
-                <span>GYMMM</span> TANK
+                <span>POWER</span> TANK
               </div>
               <div class="label-product-title">${preset.name.replace(/\s*\(\d+\s*KG\)/i, '')}</div>
               <div class="label-product-tagline">${preset.tagline}</div>
@@ -735,7 +735,7 @@ export const AdminPanel: React.FC = () => {
                   <span class="barcode-bar b2"></span>
                 </div>
                 <div class="barcode-meta">
-                  <div>BATCH: GT${preset.id.substring(0, 3).toUpperCase()}-99A</div>
+                  <div>BATCH: PTN${preset.id.substring(0, 3).toUpperCase()}-99A</div>
                   <div>MFG: 06/2026</div>
                   <div>EXP: 06/2028</div>
                 </div>
@@ -872,9 +872,9 @@ export const AdminPanel: React.FC = () => {
     return (
       <div className="login-container">
         <div className="login-title-wrapper">
-          <img src="/images/logo.jpg" alt="GYMMM TANK Logo" className="login-logo" />
+          <img src="/images/logo.jpg" alt="Power Tank Nutrition Logo" className="login-logo" />
           <h2>Admin Access Portal</h2>
-          <p className="form-help-text">Enter credentials to manage GYMMM TANK inventory.</p>
+          <p className="form-help-text">Enter credentials to manage Power Tank Nutrition inventory.</p>
         </div>
 
         <form className="login-form" onSubmit={handleLoginSubmit}>
@@ -883,7 +883,7 @@ export const AdminPanel: React.FC = () => {
             <input
               type="email"
               id="email"
-              placeholder="e.g. admin@gymmmtank.com"
+              placeholder="e.g. admin@powertanknutrition.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -911,7 +911,7 @@ export const AdminPanel: React.FC = () => {
         <div className="invoice-details" style={{ fontSize: '0.8rem', textAlign: 'center' }}>
           <span className="text-gold">💡 Default Admin Credentials</span>
           <div style={{ marginTop: '0.2rem' }}>
-            Email: <code>admin@gymmmtank.com</code> <br />
+            Email: <code>admin@powertanknutrition.com</code> <br />
             Password: <code>admin123</code>
           </div>
         </div>
@@ -1509,9 +1509,9 @@ export const AdminPanel: React.FC = () => {
 
                     {/* Middle Panel */}
                     <div className="label-visual-panel panel-middle">
-                      <img src="/images/logo.png" alt="GYMMM TANK" className="label-logo-img" />
+                      <img src="/images/logo.png" alt="Power Tank Nutrition" className="label-logo-img" />
                       <div className="label-brand-heading">
-                        <span className="gold-txt">GYMMM</span> TANK
+                        <span className="gold-txt">POWER</span> TANK
                       </div>
                       <div className="label-product-title">{preset.name.replace(/\s*\(\d+\s*KG\)/i, '')}</div>
                       <div className="label-product-tagline">{preset.tagline}</div>

@@ -127,7 +127,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
 
   const getPageTitle = () => {
     switch (path) {
-      case '/about': return 'ABOUT GYMMM TANK';
+      case '/about': return 'ABOUT POWER TANK NUTRITION';
       case '/verify': return 'PRODUCT AUTHENTICATION';
       case '/track': return 'LIVE SHIPMENT TRACKING';
       case '/dealer': return 'BECOME A DISTRIBUTOR';
@@ -155,11 +155,11 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
       <div className="dp-main-card">
         <div className="dp-card-title-bar">
           <h2>
-            {path === '/about' && 'ABOUT GYMMM TANK 🏋️‍♂️'}
-            {path === '/verify' && 'VERIFY GENUINE TANK PRODUCT 🛡️'}
-            {path === '/track' && 'TRACK YOUR TANK ORDER 📦'}
-            {path === '/dealer' && 'BECOME A GYMMM TANK DISTRIBUTOR 🤝'}
-            {path === '/contact' && 'CONTACT THE TANK CREW 📞'}
+            {path === '/about' && 'ABOUT POWER TANK NUTRITION 🏋️‍♂️'}
+            {path === '/verify' && 'VERIFY GENUINE POWER TANK PRODUCT 🛡️'}
+            {path === '/track' && 'TRACK YOUR POWER TANK ORDER 📦'}
+            {path === '/dealer' && 'BECOME A POWER TANK NUTRITION DISTRIBUTOR 🤝'}
+            {path === '/contact' && 'CONTACT THE POWER TANK CREW 📞'}
             {path === '/returns' && 'RETURN & EXCHANGE POLICY 🔄'}
             {path === '/terms' && 'TERMS OF SERVICE 📜'}
             {path === '/privacy' && 'PRIVACY POLICY 🔒'}
@@ -172,7 +172,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
           {path === '/about' && (
             <div className="dp-about-view">
               <p className="dp-lead-text">
-                GYMMM TANK was born in the raw iron pits, engineered specifically for athletes who refuse to settle for under-dosed sports nutrition.
+                Power Tank Nutrition was born in the raw iron pits, engineered specifically for athletes who refuse to settle for under-dosed sports nutrition.
               </p>
               <div className="dp-article-text">
                 <p>
@@ -205,7 +205,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                 <p className="quote-text">
                   "We don't formulate supplements for the average lifter. We build them for the dedicated builders who live in the iron game."
                 </p>
-                <span className="quote-author">— GYMMM TANK Team</span>
+                <span className="quote-author">— Power Tank Nutrition Team</span>
               </div>
             </div>
           )}
@@ -216,12 +216,12 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
               {verifyState === 'idle' && (
                 <form onSubmit={handleVerify} className="dp-form-center">
                   <p className="dp-instruction-text">
-                    Locate the 12-digit scratch authentication code printed on your GYMMM TANK tub neck seal or lid. Enter it below to check authenticity.
+                    Locate the 12-digit scratch authentication code printed on your Power Tank Nutrition tub neck seal or lid. Enter it below to check authenticity.
                   </p>
                   <div className="dp-input-field-wrap">
                     <input
                       type="text"
-                      placeholder="e.g. GT-8821-3942-X"
+                      placeholder="e.g. PTN-8821-3942-X"
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
                       className="dp-code-input"
@@ -254,12 +254,12 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                     <ShieldCheck className="dp-success-icon-large" size={96} />
                     <div className="dp-success-glow-ring"></div>
                   </div>
-                  <h3>100% GENUINE TANK PRODUCT</h3>
+                  <h3>100% GENUINE POWER TANK PRODUCT</h3>
                   <span className="dp-success-subtitle">VERIFIED BATCH LOGS FOUND</span>
                   
                   <div className="dp-receipt-box">
                     <div className="dp-receipt-row"><span>Status:</span> <strong className="text-green">CERTIFIED ORIGINAL</strong></div>
-                    <div className="fm-cert-row dp-receipt-row"><span>Batch Registration:</span> <strong>GT-882A-SUPP</strong></div>
+                    <div className="fm-cert-row dp-receipt-row"><span>Batch Registration:</span> <strong>PTN-882A-SUPP</strong></div>
                     <div className="fm-cert-row dp-receipt-row"><span>Quality Check:</span> <strong className="text-gold">100% PASS</strong></div>
                     <div className="fm-cert-row dp-receipt-row"><span>Active Purity:</span> <strong>Verified Clinical Grade</strong></div>
                     <div className="fm-cert-row dp-receipt-row"><span>Origin:</span> <strong>Imported Raw Material Logs</strong></div>
@@ -280,7 +280,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                   <span className="dp-fail-subtitle">INVALID OR UNREGISTERED BATCH CODE</span>
                   
                   <p className="dp-fail-description">
-                    The code entered does not match any registered batch code in our secure database. If you purchased this tub from an unauthorized dealer, it may be a counterfeit product. Please contact support immediately at support@gymmmtank.com.
+                    The code entered does not match any registered batch code in our secure database. If you purchased this tub from an unauthorized dealer, it may be a counterfeit product. Please contact support immediately at support@powertanknutrition.com.
                   </p>
 
                   <button onClick={() => setVerifyState('idle')} className="dp-btn-gold-large">
@@ -499,10 +499,10 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                   <p className="dp-contact-val">+91 9350931316</p>
                   <span className="dp-contact-badge-btn">Click to Chat <ExternalLink size={12} /></span>
                 </a>
-                <a href="mailto:support@gymmmtank.com" className="dp-contact-item-card">
+                <a href="mailto:support@powertanknutrition.com" className="dp-contact-item-card">
                   <div className="dp-contact-icon-box gold-glow-pulse"><Mail size={32} /></div>
                   <h4>Email Assistance</h4>
-                  <p className="dp-contact-val">support@gymmmtank.com</p>
+                  <p className="dp-contact-val">support@powertanknutrition.com</p>
                   <span className="dp-contact-badge-btn">Send Email <ExternalLink size={12} /></span>
                 </a>
               </div>
@@ -510,7 +510,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
               <div className="dp-hq-card">
                 <Landmark className="text-gold mr-4" size={36} style={{ flexShrink: 0 }} />
                 <div>
-                  <h5>GYMMM TANK Headquarters</h5>
+                  <h5>Power Tank Nutrition Headquarters</h5>
                   <p className="text-secondary">#5052 Kasera Street, Ambala Cantt, Haryana, India - 133001</p>
                 </div>
               </div>
@@ -523,13 +523,13 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
               {path === '/returns' && (
                 <>
                   <h3>🔄 Return, Exchange & Guarantee Policy</h3>
-                  <p>At GYMMM TANK, our formulations are built with uncompromising quality. If your product is compromised, we stand by you.</p>
+                  <p>At Power Tank Nutrition, our formulations are built with uncompromising quality. If your product is compromised, we stand by you.</p>
                   
                   <h5>1. Damaged or Tampered Shipments</h5>
-                  <p>If your tub security seal is broken upon arrival, **do not consume**. Take clear photos and contact us at support@gymmmtank.com or WhatsApp within 48 hours. We will ship a replacement tub instantly with zero questions asked.</p>
+                  <p>If your tub security seal is broken upon arrival, **do not consume**. Take clear photos and contact us at support@powertanknutrition.com or WhatsApp within 48 hours. We will ship a replacement tub instantly with zero questions asked.</p>
 
                   <h5>2. Unopened Returns</h5>
-                  <p>We accept unopened products back within 14 days of delivery. The security seal must be intact. Returns will be refunded in Tank Coins or to the original payment source after deduction of shipping logs.</p>
+                  <p>We accept unopened products back within 14 days of delivery. The security seal must be intact. Returns will be refunded in Power Coins or to the original payment source after deduction of shipping logs.</p>
 
                   <h5>3. Flavor / Performance Satisfaction</h5>
                   <p>Due to the pure quality of active compounds (e.g., highly loaded beta-alanine causing normal tingling, or citrulline's natural sour flavor profiles), flavor profile returns are generally not accepted unless an actual formulation anomaly is confirmed by our QA lab.</p>
@@ -539,11 +539,11 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
               {path === '/terms' && (
                 <>
                   <h3>📜 Terms of Service</h3>
-                  <p>Welcome to GYMMM TANK. By using this website, you agree to comply with our Terms of Service.</p>
+                  <p>Welcome to Power Tank Nutrition. By using this website, you agree to comply with our Terms of Service.</p>
                   <h5>1. Authenticity Guard</h5>
-                  <p>All GYMMM TANK products feature secure batch verification codes. Attempting to copy, replicate, or counterfeit GYMMM TANK products or authentication codes will trigger immediate legal actions under commercial trademark laws.</p>
+                  <p>All Power Tank Nutrition products feature secure batch verification codes. Attempting to copy, replicate, or counterfeit Power Tank Nutrition products or authentication codes will trigger immediate legal actions under commercial trademark laws.</p>
                   <h5>2. Account Responsibility</h5>
-                  <p>Users are responsible for maintaining the privacy of their accounts, passwords, and Tank Coins wallet balances.</p>
+                  <p>Users are responsible for maintaining the privacy of their accounts, passwords, and Power Coins wallet balances.</p>
                   <h5>3. Formulation Changes</h5>
                   <p>We constantly refine our products based on the latest clinical science. Product labels may change to match updated active levels without prior notice.</p>
                 </>
@@ -567,7 +567,7 @@ export const DedicatedPages: React.FC<DedicatedPagesProps> = ({ path, navigate }
                   <h3>⚠️ Medical & Supplement Disclaimer</h3>
                   <p>Please read this disclaimer carefully before training or taking any performance supplements.</p>
                   <h5>1. Professional Consultation</h5>
-                  <p>Products sold on GYMMM TANK are high-potency formulations. Always consult a physician, sports nutritionist, or trainer before starting a supplement regimen, especially if you have pre-existing cardiovascular conditions.</p>
+                  <p>Products sold on Power Tank Nutrition are high-potency formulations. Always consult a physician, sports nutritionist, or trainer before starting a supplement regimen, especially if you have pre-existing cardiovascular conditions.</p>
                   <h5>2. Active Side Effects (Beta-Alanine Tingles)</h5>
                   <p>High levels of beta-alanine trigger **paresthesia** (a completely harmless tingling sensation on the face and arms). This is a normal sign of activation and is not an allergic reaction.</p>
                   <h5>3. Performance Goals</h5>

@@ -186,24 +186,24 @@ const getNutritionImage = (productName: string): string => {
 const getProductLongDescription = (productName: string): string => {
   const name = productName.toUpperCase();
   if (name.includes('WHEY') || name.includes('PROTEIN')) {
-    return `GYMMM TANK WHEY ISOLATE is developed keeping in mind the ever-changing needs of fitness enthusiasts. It uses the purest protein - Whey Protein Isolate which is fat free, carb free and lactose free. Loaded with the profusion of most premium isolates, it helps build muscles without any unwanted weight gain.\n\nDeveloped using the best quality Whey Protein Isolate imported from USA. It is ultra-filtered for fast digestion and easy absorption into the muscles by the aid of an elite amino acid profile.\n\nIt is extremely good in taste, mixes instantly with water or milk, and helps in building lean muscle mass while boosting recovery speeds after high-intensity training. Features DigeZyme® digestive enzymes for zero bloating.`;
+    return `POWER TANK WHEY ISOLATE is developed keeping in mind the ever-changing needs of fitness enthusiasts. It uses the purest protein - Whey Protein Isolate which is fat free, carb free and lactose free. Loaded with the profusion of most premium isolates, it helps build muscles without any unwanted weight gain.\n\nDeveloped using the best quality Whey Protein Isolate imported from USA. It is ultra-filtered for fast digestion and easy absorption into the muscles by the aid of an elite amino acid profile.\n\nIt is extremely good in taste, mixes instantly with water or milk, and helps in building lean muscle mass while boosting recovery speeds after high-intensity training. Features DigeZyme® digestive enzymes for zero bloating.`;
   }
   if (name.includes('PRE-WORKOUT') || name.includes('DOUBLE SHOT')) {
-    return `GYMMM TANK DOUBLE SHOT PRE-WORKOUT is an extreme high-stimulant training formula engineered to push your mental focus and muscular performance past all historical thresholds.\n\nFormulated with 6000mg of L-Citrulline Malate for massive blood flow expansion, and 300mg of Caffeine Anhydrous to maximize cellular energy output, it triggers an instant surge in exercise output.\n\nL-Tyrosine adds cognitive tunnel vision, while Beta-Alanine delays the onset of lactic acid buildup. Perfect for advanced athletes looking to crush hit plateaus and go to the absolute extremes.`;
+    return `POWER TANK DOUBLE SHOT PRE-WORKOUT is an extreme high-stimulant training formula engineered to push your mental focus and muscular performance past all historical thresholds.\n\nFormulated with 6000mg of L-Citrulline Malate for massive blood flow expansion, and 300mg of Caffeine Anhydrous to maximize cellular energy output, it triggers an instant surge in exercise output.\n\nL-Tyrosine adds cognitive tunnel vision, while Beta-Alanine delays the onset of lactic acid buildup. Perfect for advanced athletes looking to crush hit plateaus and go to the absolute extremes.`;
   }
   if (name.includes('CREATINE')) {
-    return `GYMMM TANK CREATINE CHARGE delivers 100% pure, ultra-micronized creatine monohydrate to elevate your muscle volumization and power outputs.\n\nConsisting of 200-mesh premium grade powder, it dissolves instantly in water, juice, or your protein shake without leaving grainy residues. Creatine increases the body's phosphocreatine reserves, facilitating rapid ATP regeneration to power high-intensity lifts.\n\nConsistent daily usage accelerates dry muscle fiber growth, enhances cellular hydration, and increases peak muscular torque.`;
+    return `POWER TANK CREATINE CHARGE delivers 100% pure, ultra-micronized creatine monohydrate to elevate your muscle volumization and power outputs.\n\nConsisting of 200-mesh premium grade powder, it dissolves instantly in water, juice, or your protein shake without leaving grainy residues. Creatine increases the body's phosphocreatine reserves, facilitating rapid ATP regeneration to power high-intensity lifts.\n\nConsistent daily usage accelerates dry muscle fiber growth, enhances cellular hydration, and increases peak muscular torque.`;
   }
   if (name.includes('EAA') || name.includes('BCAA')) {
-    return `GYMMM TANK EAA + BCAA RECOVERY FUEL is a premium intra-workout hydration stack containing all 9 essential amino acids in clinical proportions.\n\nPowered by 7g of EAAs and 5g of BCAAs, it acts as an anabolic shield to prevent muscle catabolism during heavy training. The formula is enriched with Coconut Water Powder and Taurine to maintain electrolyte balance, prevent muscle cramping, and accelerate cellular hydration.\n\nCompletely sugar-free, it delivers clean athletic fuel to repair muscle tissue as you lift.`;
+    return `POWER TANK EAA + BCAA RECOVERY FUEL is a premium intra-workout hydration stack containing all 9 essential amino acids in clinical proportions.\n\nPowered by 7g of EAAs and 5g of BCAAs, it acts as an anabolic shield to prevent muscle catabolism during heavy training. The formula is enriched with Coconut Water Powder and Taurine to maintain electrolyte balance, prevent muscle cramping, and accelerate cellular hydration.\n\nCompletely sugar-free, it delivers clean athletic fuel to repair muscle tissue as you lift.`;
   }
   if (name.includes('BURNER') || name.includes('FAT')) {
-    return `GYMMM TANK SHRED TANK BURNER is an advanced thermogenic fat-loss formula designed to accelerate caloric expenditure, boost metabolic rate, and support healthy weight management.\n\nFormulated with L-Carnitine L-Tartrate, Green Tea Extract, and Garcinia Cambogia, it assists in mobilizing stored fatty acids and converting them into direct workout energy.\n\nPerfect for weight management cycles, it also includes a mental focus blend to sustain training intensity during calorie-restricted diets.`;
+    return `POWER TANK SHRED TANK BURNER is an advanced thermogenic fat-loss formula designed to accelerate caloric expenditure, boost metabolic rate, and support healthy weight management.\n\nFormulated with L-Carnitine L-Tartrate, Green Tea Extract, and Garcinia Cambogia, it assists in mobilizing stored fatty acids and converting them into direct workout energy.\n\nPerfect for weight management cycles, it also includes a mental focus blend to sustain training intensity during calorie-restricted diets.`;
   }
   if (name.includes('CITRULLINE')) {
-    return `GYMMM TANK PURE CITRULLINE MALATE provides premium 2:1 ratio L-Citrulline Malate with zero fillers, flavorings, or processing additives.\n\nBy increasing nitric oxide production, it triggers arterial relaxation and vascular expansion, forcing skin-splitting muscle pumps and maximizing nutrient delivery to working muscle fibers.\n\nAdditionally, it aids in clearing metabolic waste products like ammonia, delaying the onset of muscular fatigue. Unflavored and highly soluble, it stacks perfectly into any pre- or intra-workout shake.`;
+    return `POWER TANK PURE CITRULLINE MALATE provides premium 2:1 ratio L-Citrulline Malate with zero fillers, flavorings, or processing additives.\n\nBy increasing nitric oxide production, it triggers arterial relaxation and vascular expansion, forcing skin-splitting muscle pumps and maximizing nutrient delivery to working muscle fibers.\n\nAdditionally, it aids in clearing metabolic waste products like ammonia, delaying the onset of muscular fatigue. Unflavored and highly soluble, it stacks perfectly into any pre- or intra-workout shake.`;
   }
-  return `GYMMM TANK MASSIVE MASS GAINER is a calorie-dense mass-building formula designed for hardgainers and athletes looking to add serious size and strength.\n\nEvery serving delivers a high-yield blend of fast and slow digesting proteins stacked with complex carbohydrates to fuel recovery and glycogen replenishment.\n\nFortified with digestive enzymes like Protease and Amylase, it facilitates clean absorption and prevents digestive distress. Mix with whole milk for an extra caloric surge to hit weight gain milestones.`;
+  return `POWER TANK MASSIVE MASS GAINER is a calorie-dense mass-building formula designed for hardgainers and athletes looking to add serious size and strength.\n\nEvery serving delivers a high-yield blend of fast and slow digesting proteins stacked with complex carbohydrates to fuel recovery and glycogen replenishment.\n\nFortified with digestive enzymes like Protease and Amylase, it facilitates clean absorption and prevents digestive distress. Mix with whole milk for an extra caloric surge to hit weight gain milestones.`;
 };
 
 const getDetailedInfo = (productName: string) => {
@@ -579,7 +579,7 @@ const getProductFaqs = (productName: string) => {
   }
   return [
     {
-      q: "Are GYMMM TANK supplements authentic?",
+      q: "Are Power Tank Nutrition supplements authentic?",
       a: "Yes, all our supplements are manufactured in state-of-the-art GMP certified facilities, utilizing premium imported raw materials to ensure maximum purity and effectiveness."
     },
     {
@@ -1650,13 +1650,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           </div>
         </section>
 
-        {/* Why Choose GYMMM TANK Section */}
+        {/* Why Choose Power Tank Nutrition Section */}
         <section className="why-choose-section">
-          <h2 className="why-choose-title">WHY CHOOSE <span className="gold-text">GYMMM TANK?</span></h2>
+          <h2 className="why-choose-title">WHY CHOOSE <span className="gold-text">POWER TANK NUTRITION?</span></h2>
           <div className="why-choose-table">
             <div className="why-choose-header-row">
               <div className="why-choose-feature-col">FEATURE</div>
-              <div className="why-choose-us-col">GYMMM TANK</div>
+              <div className="why-choose-us-col">POWER TANK</div>
               <div className="why-choose-them-col">OTHERS</div>
             </div>
             {getWhyChoosePoints(combo.name).map((row, idx) => (
@@ -1867,7 +1867,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           {/* Loyalty Coins Banner */}
           {product.category.toLowerCase() !== 'coming soon' && (
             <div className="loyalty-coins-badge" style={{ marginBottom: '1.5rem' }}>
-              <span>🪙 Earn <strong>{Math.round(activePrice * 0.1)} GYMMM Coins</strong> on this order!</span>
+              <span>🪙 Earn <strong>{Math.round(activePrice * 0.1)} Power Coins</strong> on this order!</span>
             </div>
           )}
 
@@ -2220,13 +2220,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         </div>
       </section>
 
-      {/* Why Choose GYMMM TANK Section */}
+      {/* Why Choose Power Tank Nutrition Section */}
       <section className="why-choose-section">
-        <h2 className="why-choose-title">WHY CHOOSE <span className="gold-text">GYMMM TANK?</span></h2>
+        <h2 className="why-choose-title">WHY CHOOSE <span className="gold-text">POWER TANK NUTRITION?</span></h2>
         <div className="why-choose-table">
           <div className="why-choose-header-row">
             <div className="why-choose-feature-col">FEATURE</div>
-            <div className="why-choose-us-col">GYMMM TANK</div>
+            <div className="why-choose-us-col">POWER TANK</div>
             <div className="why-choose-them-col">OTHERS</div>
           </div>
           {getWhyChoosePoints(product.name).map((row, idx) => (

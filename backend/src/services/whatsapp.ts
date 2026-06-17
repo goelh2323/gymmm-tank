@@ -117,12 +117,12 @@ export const sendWhatsAppMessage = async (to: string, body: string): Promise<boo
 // Dispatch Order Confirmation
 export const sendOrderConfirmationWhatsApp = async (order: any) => {
   const orderIdShort = order.id.slice(0, 8).toUpperCase();
-  const message = `🏋️ *GYMMM TANK - ORDER CONFIRMED* 🏋️\n\n` +
+  const message = `🏋️ *POWER TANK NUTRITION - ORDER CONFIRMED* 🏋️\n\n` +
     `Hey ${order.customerName}! Your order has been locked in and is currently being prepped for shipment.\n\n` +
     `📦 *Order ID:* #${orderIdShort}\n` +
     `💵 *Total Amount:* ${formatINR(order.total)}\n` +
     `🚚 *Delivery Address:* ${order.address}, ${order.city} - ${order.pincode}\n\n` +
-    `Thank you for choosing GYMMM TANK. Time to unleash your ultimate tank potential! 💪`;
+    `Thank you for choosing Power Tank Nutrition. Time to unleash your ultimate power potential! 💪`;
 
   return sendWhatsAppMessage(order.customerPhone, message).catch((err) => {
     console.error(`❌ Failed to dispatch Order Confirmation WhatsApp for order #${order.id}:`, err);
@@ -135,21 +135,21 @@ export const sendOrderStatusWhatsApp = async (order: any, status: 'SHIPPED' | 'D
   let message = '';
 
   if (status === 'SHIPPED') {
-    message = `🚀 *GYMMM TANK - ORDER SHIPPED* 🚀\n\n` +
-      `Hey ${order.customerName}! Your GYMMM TANK fuel has been loaded and dispatched. Your package is officially on its way!\n\n` +
+    message = `🚀 *POWER TANK NUTRITION - ORDER SHIPPED* 🚀\n\n` +
+      `Hey ${order.customerName}! Your Power Tank Nutrition fuel has been loaded and dispatched. Your package is officially on its way!\n\n` +
       `📦 *Order ID:* #${orderIdShort}\n` +
       `🚚 *Delivery Address:* ${order.address}, ${order.city}\n` +
       `📅 *Estimated Delivery:* 3 - 5 Days\n\n` +
       `Get ready to crush your goals! 🏋️`;
   } else if (status === 'DELIVERED') {
-    message = `📦 *GYMMM TANK - ORDER DELIVERED* 📦\n\n` +
+    message = `📦 *POWER TANK NUTRITION - ORDER DELIVERED* 📦\n\n` +
       `Hey ${order.customerName}! Your order #${orderIdShort} has been successfully delivered!\n\n` +
-      `📸 *Share Your Gains:* Snap a photo, tag @gymmmtank on Instagram with #GYMMMTANK to earn exclusive rewards!\n\n` +
+      `📸 *Share Your Gains:* Snap a photo, tag @powertanknutrition on Instagram with #POWERTANKNUTRITION to earn exclusive rewards!\n\n` +
       `Time to fuel up and crush those training sessions! 💪🏋️`;
   } else if (status === 'CANCELLED') {
-    message = `❌ *GYMMM TANK - ORDER CANCELLED* ❌\n\n` +
+    message = `❌ *POWER TANK NUTRITION - ORDER CANCELLED* ❌\n\n` +
       `Hey ${order.customerName}! Your order #${orderIdShort} has been cancelled. Any loyalty coins used or earned have been adjusted.\n\n` +
-      `If you have questions, contact us at support@gymmmtank.com.`;
+      `If you have questions, contact us at support@powertanknutrition.com.`;
   } else {
     return;
   }

@@ -29,13 +29,13 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('gymmmTankCart');
+    const saved = localStorage.getItem('powerTankCart');
     return saved ? JSON.parse(saved) : [];
   });
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('gymmmTankCart', JSON.stringify(cartItems));
+    localStorage.setItem('powerTankCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (product: Product, flavor: string, size: string, quantity = 1, overridePrice?: number, overrideComparePrice?: number) => {

@@ -189,7 +189,7 @@ export const CartDrawer: React.FC = () => {
     if (freeShakerEligible) {
       itemsPayload.push({
         productId: 'free-shaker-bottle',
-        productName: 'GYMMM TANK SHAKER BOTTLE',
+        productName: 'POWER TANK SHAKER BOTTLE',
         flavor: 'Classic Smoke',
         size: '700ml',
         quantity: 1,
@@ -312,7 +312,7 @@ export const CartDrawer: React.FC = () => {
                   </div>
                   <p className="freebie-instructions">
                     {freeShakerEligible 
-                      ? 'Congratulations! A custom GYMMM TANK Shaker Cup will be automatically packed with your shipment.' 
+                      ? 'Congratulations! A custom Power Tank Shaker Cup will be automatically packed with your shipment.' 
                       : `Unlock a premium Gym Shaker Bottle (Classic Smoke, 700ml) on orders above ₹3,000.`
                     }
                   </p>
@@ -383,7 +383,7 @@ export const CartDrawer: React.FC = () => {
                           <div className="freebie-gift-badge">GIFT</div>
                           <img src="/images/logo.png" alt="Free Shaker Bottle" className="cart-item-image" />
                           <div className="cart-item-info">
-                            <h4 className="cart-item-title text-gold">GYMMM TANK SHAKER</h4>
+                            <h4 className="cart-item-title text-gold">POWER TANK SHAKER</h4>
                             <div className="cart-item-option">Classic Smoke / 700ml</div>
                             <div className="cart-item-actions">
                               <span className="qty-number">Qty: 1</span>
@@ -509,7 +509,7 @@ export const CartDrawer: React.FC = () => {
                     <label>Email Address</label>
                     <input
                       type="email"
-                      placeholder="e.g. customer@gymmmtank.com"
+                      placeholder="e.g. customer@powertanknutrition.com"
                       value={shipEmail}
                       onChange={(e) => setShipEmail(e.target.value)}
                       required

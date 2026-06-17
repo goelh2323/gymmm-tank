@@ -17,7 +17,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'gymmm-tank-secret-key-9988';
+const JWT_SECRET = process.env.JWT_SECRET || 'power-tank-nutrition-secret-key-9988';
 
 // Enable CORS and JSON body parser
 app.use(cors());
@@ -153,7 +153,7 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
         },
         body: JSON.stringify({
           sender: {
-            name: 'GYMMM TANK',
+            name: 'Power Tank Nutrition',
             email: senderEmail,
           },
           to: [{ email: to }],
@@ -175,7 +175,7 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
   } else if (process.env.RESEND_API_KEY) {
     try {
       // Free tier Resend accounts are restricted to sending from onboarding@resend.dev
-      const from = process.env.RESEND_FROM || 'GYMMM TANK <onboarding@resend.dev>';
+      const from = process.env.RESEND_FROM || 'Power Tank Nutrition <onboarding@resend.dev>';
       
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -206,12 +206,12 @@ const sendEmail = async ({ to, subject, html }: { to: string; subject: string; h
       // Determine which sender address to use: Gmail or dev Ethereal
       const senderEmail = process.env.EMAIL_USER
         || testEmailAccount?.user
-        || 'noreply@gymmmtank.com';
+        || 'noreply@powertanknutrition.com';
       const driver = process.env.EMAIL_USER ? 'Gmail' : 'Ethereal';
 
       console.log(`📧 [${driver}] Sending to: ${to}`);
       const info = await transporter.sendMail({
-        from: `"GYMMM TANK" <${senderEmail}>`,
+        from: `"Power Tank Nutrition" <${senderEmail}>`,
         to,
         subject,
         html,
@@ -256,9 +256,9 @@ const sendOrderConfirmationEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid #d4af37;">
-            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
-            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
-              <span style="color: #d4af37;">GYMMM</span> TANK
+            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
+              <span style="color: #d4af37;">POWER TANK</span> NUTRITION
             </h1>
             <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
           </div>
@@ -338,7 +338,7 @@ const sendOrderConfirmationEmail = async (order: any) => {
 
             <!-- Help/Footer info -->
             <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0; text-align: center;">
-              Questions about your gear? Reach us at <a href="mailto:support@gymmmtank.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+              Questions about your supplements? Reach us at <a href="mailto:support@powertanknutrition.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@powertanknutrition.com</a> or call 9350931316.
             </p>
 
           </div>
@@ -346,7 +346,7 @@ const sendOrderConfirmationEmail = async (order: any) => {
           <!-- Footer Banner -->
           <div style="background-color: #080808; padding: 24px 32px; text-align: center; border-top: 1px solid #1a1a1a;">
             <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
-              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+              © ${new Date().getFullYear()} Power Tank Nutrition. All rights reserved.
             </p>
             <p style="color: #333333; font-size: 9px; margin: 4px 0 0;">
               Engineered for athletes who demand maximum strength and recovery.
@@ -358,7 +358,7 @@ const sendOrderConfirmationEmail = async (order: any) => {
 
     await sendEmail({
       to: order.customerEmail,
-      subject: `✅ Order Confirmed #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      subject: `✅ Order Confirmed #${order.id.slice(0, 8).toUpperCase()} — Power Tank Nutrition`,
       html,
     });
   } catch (err) {
@@ -377,9 +377,9 @@ const sendShipmentEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
-            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
-            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
-              <span style="color: #d4af37;">GYMMM</span> TANK
+            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
+              <span style="color: #d4af37;">POWER TANK</span> NUTRITION
             </h1>
             <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
           </div>
@@ -391,7 +391,7 @@ const sendShipmentEmail = async (order: any) => {
               Your Order is Shipped!
             </h2>
             <p style="color: #cccccc; margin: 0 auto 28px; font-size: 14px; line-height: 1.6; max-width: 460px;">
-              Hey <strong>${order.customerName}</strong>, your GYMMM TANK fuel has been loaded and dispatched! Your package is officially on its way.
+              Hey <strong>${order.customerName}</strong>, your Power Tank fuel has been loaded and dispatched! Your package is officially on its way.
             </p>
 
             <!-- Details Summary Card -->
@@ -414,7 +414,7 @@ const sendShipmentEmail = async (order: any) => {
             </div>
 
             <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0;">
-              Need help? Contact support at <a href="mailto:support@gymmmtank.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+              Need help? Contact support at <a href="mailto:support@powertanknutrition.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@powertanknutrition.com</a> or call 9350931316.
             </p>
 
           </div>
@@ -422,7 +422,7 @@ const sendShipmentEmail = async (order: any) => {
           <!-- Footer Banner -->
           <div style="background-color: #080808; padding: 24px 32px; border-top: 1px solid #1a1a1a;">
             <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
-              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+              © ${new Date().getFullYear()} Power Tank Nutrition. All rights reserved.
             </p>
           </div>
 
@@ -431,7 +431,7 @@ const sendShipmentEmail = async (order: any) => {
 
     const result = await sendEmail({
       to: order.customerEmail,
-      subject: `🚀 Your Order is Shipped! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      subject: `🚀 Your Order is Shipped! #${order.id.slice(0, 8).toUpperCase()} — Power Tank Nutrition`,
       html,
     });
     console.log(`📧 Shipment Email sent successfully for Order #${order.id}. Message ID: ${result?.messageId || result?.id}`);
@@ -460,9 +460,9 @@ const sendDeliveryEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
-            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
-            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
-              <span style="color: #d4af37;">GYMMM</span> TANK
+            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
+              <span style="color: #d4af37;">POWER TANK</span> NUTRITION
             </h1>
             <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
           </div>
@@ -474,7 +474,7 @@ const sendDeliveryEmail = async (order: any) => {
               Order Delivered!
             </h2>
             <p style="color: #cccccc; margin: 0 auto 28px; font-size: 14px; line-height: 1.6; max-width: 460px;">
-              Hey <strong>${order.customerName}</strong>, your GYMMM TANK order <strong style="color: #d4af37;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been successfully delivered! Time to fuel up and crush those goals.
+              Hey <strong>${order.customerName}</strong>, your Power Tank order <strong style="color: #d4af37;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been successfully delivered! Time to fuel up and crush those goals.
             </p>
 
             <!-- Items Table -->
@@ -496,15 +496,15 @@ const sendDeliveryEmail = async (order: any) => {
             <div style="background-color: #121212; border: 1px solid #221c0e; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 28px;">
               <p style="margin: 0 0 10px; color: #d4af37; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Share Your Gains! 📸</p>
               <p style="margin: 0 0 16px; color: #cccccc; font-size: 13px; line-height: 1.5;">
-                Snap a photo of your GYMMM TANK fuel, tag us on Instagram <strong style="color: #ffffff;">@gymmmtank</strong>, and use the hashtag <strong style="color: #d4af37;">#GYMMMTANK</strong> to get featured and earn exclusive rewards!
+                Snap a photo of your Power Tank fuel, tag us on Instagram <strong style="color: #ffffff;">@powertanknutrition</strong>, and use the hashtag <strong style="color: #d4af37;">#POWERTANKNUTRITION</strong> to get featured and earn exclusive rewards!
               </p>
-              <a href="https://instagram.com/gymmmtank" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #f5d98a 50%, #d4af37 100%); padding: 12px 24px; border-radius: 4px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #000000; text-decoration: none; box-shadow: 0 4px 12px rgba(212,175,55,0.3);">
-                Tag @gymmmtank
+              <a href="https://instagram.com/powertanknutrition" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #f5d98a 50%, #d4af37 100%); padding: 12px 24px; border-radius: 4px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #000000; text-decoration: none; box-shadow: 0 4px 12px rgba(212,175,55,0.3);">
+                Tag @powertanknutrition
               </a>
             </div>
 
             <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0;">
-              Need help or have questions about your supplements? Contact support at <a href="mailto:support@gymmmtank.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+              Need help or have questions about your supplements? Contact support at <a href="mailto:support@powertanknutrition.com" style="color: #d4af37; text-decoration: none; font-weight: 600;">support@powertanknutrition.com</a> or call 9350931316.
             </p>
 
           </div>
@@ -512,7 +512,7 @@ const sendDeliveryEmail = async (order: any) => {
           <!-- Footer Banner -->
           <div style="background-color: #080808; padding: 24px 32px; border-top: 1px solid #1a1a1a;">
             <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
-              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+              © ${new Date().getFullYear()} Power Tank Nutrition. All rights reserved.
             </p>
           </div>
 
@@ -521,7 +521,7 @@ const sendDeliveryEmail = async (order: any) => {
 
     const result = await sendEmail({
       to: order.customerEmail,
-      subject: `📦 Your Order is Delivered! #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      subject: `📦 Your Order is Delivered! #${order.id.slice(0, 8).toUpperCase()} — Power Tank Nutrition`,
       html,
     });
     console.log(`📧 Delivery Email sent successfully for Order #${order.id}. Message ID: ${result?.messageId || result?.id}`);
@@ -550,9 +550,9 @@ const sendCancellationEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #ef4444;">
-            <img src="https://gymmm-tank.vercel.app/images/logo.png" alt="GYMMM TANK Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #ef4444; border-radius: 50%; display: inline-block; background-color: #000;" />
-            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;">
-              <span style="color: #ef4444;">GYMMM</span> TANK
+            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #ef4444; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
+              <span style="color: #ef4444;">POWER TANK</span> NUTRITION
             </h1>
             <p style="color: #888888; margin: 10px 0 0; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Engineered for Mind, Muscle & Performance</p>
           </div>
@@ -564,7 +564,7 @@ const sendCancellationEmail = async (order: any) => {
               Order Cancelled
             </h2>
             <p style="color: #cccccc; margin: 0 auto 28px; font-size: 14px; line-height: 1.6; max-width: 460px;">
-              Hey <strong>${order.customerName}</strong>, your GYMMM TANK order <strong style="color: #ef4444;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been cancelled. Any loyalty points used or earned on this transaction have been adjusted.
+              Hey <strong>${order.customerName}</strong>, your Power Tank order <strong style="color: #ef4444;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been cancelled. Any loyalty points used or earned on this transaction have been adjusted.
             </p>
 
             <!-- Items Table -->
@@ -583,7 +583,7 @@ const sendCancellationEmail = async (order: any) => {
             </table>
 
             <p style="color: #888888; font-size: 12px; line-height: 1.5; margin: 0;">
-              If you have any questions or require assistance, please contact support at <a href="mailto:support@gymmmtank.com" style="color: #ef4444; text-decoration: none; font-weight: 600;">support@gymmmtank.com</a> or call 9350931316.
+              If you have any questions or require assistance, please contact support at <a href="mailto:support@powertanknutrition.com" style="color: #ef4444; text-decoration: none; font-weight: 600;">support@powertanknutrition.com</a> or call 9350931316.
             </p>
 
           </div>
@@ -591,7 +591,7 @@ const sendCancellationEmail = async (order: any) => {
           <!-- Footer Banner -->
           <div style="background-color: #080808; padding: 24px 32px; border-top: 1px solid #1a1a1a;">
             <p style="color: #555555; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
-              © ${new Date().getFullYear()} GYMMM TANK Supplements. All rights reserved.
+              © ${new Date().getFullYear()} Power Tank Nutrition. All rights reserved.
             </p>
           </div>
 
@@ -600,7 +600,7 @@ const sendCancellationEmail = async (order: any) => {
 
     const result = await sendEmail({
       to: order.customerEmail,
-      subject: `❌ Order Cancelled #${order.id.slice(0, 8).toUpperCase()} — GYMMM TANK`,
+      subject: `❌ Order Cancelled #${order.id.slice(0, 8).toUpperCase()} — Power Tank Nutrition`,
       html,
     });
     console.log(`📧 Cancellation Email sent successfully for Order #${order.id}. Message ID: ${result?.messageId || result?.id}`);
@@ -716,7 +716,7 @@ const CheckoutSchema = z.object({
 app.get('/', (req: Request, res: Response) => {
   res.json({
     status: 'online',
-    message: '🏋️ Welcome to the GYMMM TANK API Server!',
+    message: '🏋️ Welcome to the Power Tank Nutrition API Server!',
     documentation: 'Navigate to /api/v1 for API endpoints status.'
   });
 });
@@ -724,7 +724,7 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/api/v1', (req: Request, res: Response) => {
   res.json({
     status: 'healthy',
-    message: '🏋️ GYMMM TANK API v1 is fully operational!',
+    message: '🏋️ Power Tank Nutrition API v1 is fully operational!',
     endpointsCount: 14,
     timestamp: new Date().toISOString()
   });
@@ -1618,7 +1618,7 @@ app.get('/api/v1/test-email', async (req: Request, res: Response) => {
     const toAddress = (req.query.to as string) || 'transformernutritionamb@gmail.com';
     const result = await sendEmail({
       to: toAddress,
-      subject: '🧪 GYMMM TANK Email Diagnostic Test',
+      subject: '🧪 Power Tank Nutrition Email Diagnostic Test',
       html: `<h3>If you receive this, your email configuration is working perfectly!</h3>
              <p><strong>Active Driver:</strong> ${activeDriver}</p>
              <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>`,
@@ -1647,7 +1647,7 @@ app.get('/api/v1/test-email', async (req: Request, res: Response) => {
 // Start the Express Server
 app.listen(PORT, () => {
   console.log(`========================================`);
-  console.log(`🏋️ GYMMM TANK Backend running on port ${PORT}`);
+  console.log(`🏋️ Power Tank Nutrition Backend running on port ${PORT}`);
   console.log(`🔗 API Base URL: http://localhost:${PORT}/api/v1`);
   console.log(`========================================`);
 });

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://gymmm-tank.vercel.app/sitemap.xml
+Sitemap: https://powertanknutrition.vercel.app/sitemap.xml

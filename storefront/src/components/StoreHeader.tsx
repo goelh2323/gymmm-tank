@@ -35,10 +35,11 @@ export const StoreHeader: React.FC<StoreHeaderProps> = ({ currentView, setView, 
 
         {/* Center: Brand Logo & Title */}
         <div className="header-center" onClick={() => setView('store')}>
-          <img src="/images/logo.jpg" alt="GYMMM TANK Logo" className="brand-logo-img-v2" />
+          <img src="/images/logo.jpg" alt="Power Tank Nutrition Logo" className="brand-logo-img-v2" />
           <span className="brand-text-v2">
-            <span className="brand-white">GYMMM</span>
+            <span className="brand-white">POWER</span>
             <span className="brand-gold">TANK</span>
+            <span className="brand-nutrition">NUTRITION</span>
           </span>
         </div>
 

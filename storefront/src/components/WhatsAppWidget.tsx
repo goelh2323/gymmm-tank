@@ -5,16 +5,16 @@ export const WhatsAppWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
 
-  const SUPPORT_NUMBER = '919350931316'; // Official Gymmm Tank WhatsApp Number (with country code)
+  const SUPPORT_NUMBER = '919350931316'; // Official Power Tank WhatsApp Number (with country code)
 
   const quickReplies = [
-    { label: '🏋️‍♂️ PR & Stack Advice', text: 'Hey GYMMM TANK! Need professional stack advice to smash my next PR. 💪' },
-    { label: '📦 Track My Fuel', text: 'Hey GYMMM TANK! Checking status on my order.' },
-    { label: '🤝 Business & Dealership', text: 'Hey GYMMM TANK! Interested in franchise/dealership opportunities.' }
+    { label: '🏋️‍♂️ PR & Stack Advice', text: 'Hey Power Tank! Need professional stack advice to smash my next PR. 💪' },
+    { label: '📦 Track My Fuel', text: 'Hey Power Tank! Checking status on my order.' },
+    { label: '🤝 Business & Dealership', text: 'Hey Power Tank! Interested in franchise/dealership opportunities.' }
   ];
 
   const handleStartChat = (customText?: string) => {
-    const textToSend = customText || message || 'Hello GYMMM TANK support!';
+    const textToSend = customText || message || 'Hello Power Tank support!';
     const encoded = encodeURIComponent(textToSend);
     const whatsappUrl = `https://wa.me/${SUPPORT_NUMBER}?text=${encoded}`;
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -29,11 +29,11 @@ export const WhatsAppWidget: React.FC = () => {
           <div className="wa-popup-header">
             <div className="wa-avatar-title-wrap">
               <div className="wa-support-avatar">
-                <img src="/images/logo.png" alt="GYMMM TANK Support" onError={(e) => { (e.target as HTMLImageElement).src = '/images/logo.jpg' }} />
+                <img src="/images/logo.png" alt="Power Tank Nutrition Support" onError={(e) => { (e.target as HTMLImageElement).src = '/images/logo.jpg' }} />
                 <span className="wa-online-dot"></span>
               </div>
               <div className="wa-header-text">
-                <h4>GYMMM TANK SUPPORT</h4>
+                <h4>POWER TANK SUPPORT</h4>
                 <p>Typically replies in minutes</p>
               </div>
             </div>

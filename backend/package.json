@@ -1,7 +1,7 @@
 {
-  "name": "gymmm-tank-backend",
+  "name": "power-tank-nutrition-backend",
   "version": "1.0.0",
-  "description": "Backend API for GYMMM TANK Supplement Store",
+  "description": "Backend API for Power Tank Nutrition Supplement Store",
   "main": "dist/index.js",
   "scripts": {
     "build": "prisma generate && tsc",

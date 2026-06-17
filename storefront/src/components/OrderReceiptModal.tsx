@@ -21,7 +21,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
           <CheckCircle size={52} className="invoice-success-icon text-gold animate-pulse" />
         </div>
         
-        <h2 className="invoice-title">GYMMM TANK RECEIPTS</h2>
+        <h2 className="invoice-title">POWER TANK RECEIPTS</h2>
         <p className="invoice-subtitle">DECLARED ANABOLIC TRANSACTION LOG</p>
 
         <div className="invoice-divider"></div>
@@ -153,7 +153,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
             <rect x="94" y="2" width="1" height="16" fill="#ffffff" />
             <rect x="96" y="2" width="3" height="16" fill="#ffffff" />
           </svg>
-          <span className="barcode-number">GT-{order.id.substring(0, 8).toUpperCase()}</span>
+          <span className="barcode-number">PTN-{order.id.substring(0, 8).toUpperCase()}</span>
         </div>
 
         <button className="invoice-close-btn" onClick={onClose}>
