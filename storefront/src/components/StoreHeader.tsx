@@ -37,9 +37,8 @@ export const StoreHeader: React.FC<StoreHeaderProps> = ({ currentView, setView, 
         <div className="header-center" onClick={() => setView('store')}>
           <img src="/images/logo.jpg" alt="Power Tank Nutrition Logo" className="brand-logo-img-v2" />
           <span className="brand-text-v2">
-            <span className="brand-white">POWER</span>
-            <span className="brand-gold">TANK</span>
-            <span className="brand-nutrition">NUTRITION</span>
+            <span className="brand-title-main">POWER TANK</span>
+            <span className="brand-title-sub">NUTRITION</span>
           </span>
         </div>
 

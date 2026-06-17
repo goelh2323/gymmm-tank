@@ -3777,44 +3777,37 @@ body {
 .brand-text-v2 {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 1.95rem;
-  letter-spacing: 2.5px;
   display: flex;
   flex-direction: column;
-  line-height: 0.95;
+  line-height: 1.05;
   text-transform: uppercase;
+  justify-content: center;
 }
 
-.brand-white {
-  background: linear-gradient(90deg, #ffffff 0%, #a0a0a0 25%, #ffffff 50%, #a0a0a0 75%, #ffffff 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: brandShine 5s linear infinite;
-  text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-}
-
-.brand-gold {
+.brand-title-main {
+  font-size: 1.65rem;
+  letter-spacing: 2.2px;
   background: linear-gradient(90deg, #d4af37 0%, #fff0b3 25%, #d4af37 50%, #fff0b3 75%, #d4af37 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: brandShine 5s linear infinite;
-  text-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
 }
 
-.brand-nutrition {
-  font-size: 0.62rem;
-  letter-spacing: 5px;
+.brand-title-sub {
+  font-size: 0.7rem;
+  letter-spacing: 7.6px;
   font-weight: 800;
-  margin-top: 4px;
-  background: linear-gradient(90deg, #ffffff 0%, #b8b8b8 25%, #ffffff 50%, #b8b8b8 75%, #ffffff 100%);
+  margin-top: 1px;
+  background: linear-gradient(90deg, #a8a8a8 0%, #ffffff 25%, #a8a8a8 50%, #ffffff 75%, #a8a8a8 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: brandShine 5s linear infinite;
   animation-delay: 0.8s;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  text-align: justify;
 }
 
 @keyframes brandShine {
