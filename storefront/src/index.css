@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
 
 :root {
   --bg-primary: #0a0a0a;
@@ -25,7 +25,7 @@
   --bg-glass: rgba(20, 20, 20, 0.7);
   --bg-glass-card: rgba(26, 26, 26, 0.5);
   
-  --font-display: 'Bebas Neue', sans-serif;
+  --font-display: 'Orbitron', sans-serif;
   --font-athletic: 'Montserrat', sans-serif;
   --font-body: 'Roboto', sans-serif;
   
@@ -3781,15 +3781,17 @@ body {
   flex-direction: column;
   line-height: 1.0;
   text-transform: uppercase;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 0.25rem;
   height: 90px;
   padding: 4px 0;
   box-sizing: border-box;
 }
 
 .brand-title-main {
-  font-size: 2.05rem;
-  letter-spacing: 2.2px;
+  font-size: 1.62rem;
+  letter-spacing: 1px;
+  font-weight: 900;
   background: linear-gradient(90deg, #d4af37 0%, #fff0b3 25%, #d4af37 50%, #fff0b3 75%, #d4af37 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -3799,8 +3801,8 @@ body {
 }
 
 .brand-title-sub {
-  font-size: 0.88rem;
-  letter-spacing: 9px;
+  font-size: 0.76rem;
+  letter-spacing: 5.6px;
   font-weight: 800;
   background: linear-gradient(90deg, #a8a8a8 0%, #ffffff 25%, #a8a8a8 50%, #ffffff 75%, #a8a8a8 100%);
   background-size: 200% auto;
@@ -3809,7 +3811,6 @@ body {
   animation: brandShine 5s linear infinite;
   animation-delay: 0.8s;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-  text-align: justify;
 }
 
 @keyframes brandShine {

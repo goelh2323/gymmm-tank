@@ -948,7 +948,7 @@ const StorefrontView: React.FC<StorefrontViewProps> = ({ onViewProductDetail, on
             }
           }}
         >
-          <span className="title-white">POWER TANK</span> <span className="title-gold">NUTRITION</span>
+          <span className="title-gold">POWER TANK</span> <span className="title-white">NUTRITION</span>
           <div className="tank-mode-badge-wrap">
             <span className="tank-mode-badge">{tankMode ? '🔥 TANK MODE ACTIVE 🔥' : '⚡ CLICK TO TRIGGER TANK MODE ⚡'}</span>
           </div>
