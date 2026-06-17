@@ -466,74 +466,72 @@ main.storefront-main {
 .hero-title-interactive {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 6.875rem;
+  font-size: 4.2rem;
   letter-spacing: 4px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
   cursor: pointer;
   position: relative;
   display: inline-block;
   user-select: none;
   transition: var(--transition-smooth);
-  transform: scale(1.2, 1.15);
-  transform-origin: center;
-}
-
-.hero-title-interactive:hover {
-  transform: scale(1.24, 1.19);
-}
-
-.hero-title-interactive .title-white {
-  color: #ffffff;
-  transition: color 0.6s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), -webkit-text-stroke 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hero-title-interactive .title-gold {
-  color: var(--gold-primary);
-  text-shadow: 0 0 10px var(--gold-glow);
-  transition: color 0.6s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), -webkit-text-stroke 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  background: linear-gradient(90deg, #d4af37 0%, #fff5d6 20%, #d4af37 40%, #fff5d6 60%, #d4af37 80%, #fff5d6 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brandShine 4s linear infinite;
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+  transition: var(--transition-smooth);
 }
 
-/* Interactive outline strokes on hover */
-.hero-title-interactive:hover .title-white {
-  -webkit-text-fill-color: transparent !important;
-  -webkit-text-stroke: 2px #ffffff;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-}
-
-.hero-title-interactive:hover .title-gold {
-  -webkit-text-fill-color: transparent !important;
-  -webkit-text-stroke: 2px var(--gold-primary);
-  text-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+.hero-title-interactive .title-white {
+  display: block;
+  background: linear-gradient(90deg, #a8a8a8 0%, #ffffff 20%, #a8a8a8 40%, #ffffff 60%, #a8a8a8 80%, #ffffff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brandShine 4s linear infinite;
+  animation-delay: 0.8s;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: var(--transition-smooth);
+  margin-top: 0.4rem;
 }
 
 /* Badge styling below title */
 .tank-mode-badge-wrap {
-  margin-top: 0.2rem;
+  margin-top: 0.4rem;
+  margin-bottom: 2.2rem;
   display: flex;
   justify-content: center;
+  cursor: pointer;
 }
 
 .tank-mode-badge {
   font-family: var(--font-athletic);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 800;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(6, 6, 6, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.35rem 1.2rem;
+  padding: 0.28rem 1rem;
   border-radius: 4px;
   transition: var(--transition-smooth);
 }
 
-.hero-title-interactive:hover .tank-mode-badge {
+.tank-mode-badge-wrap:hover .tank-mode-badge {
   color: var(--gold-primary);
   background: rgba(212, 175, 55, 0.08);
-  border-color: rgba(212, 175, 55, 0.3);
-  box-shadow: 0 0 10px var(--gold-glow);
-  transform: translateY(2px);
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 12px var(--gold-glow);
+  transform: translateY(-1px);
 }
 
 .hero-text-block .hero-subtitle {
@@ -2996,8 +2994,7 @@ body {
     margin-right: 0;
   }
   .hero-text-block .hero-title-interactive {
-    font-size: 4.375rem;
-    transform: scale(1.15, 1.1);
+    font-size: 3.2rem;
   }
   .hero-stats-container {
     grid-template-columns: 1fr;
@@ -3025,7 +3022,7 @@ body {
   text-shadow: 0 0 35px var(--gold-primary), 0 0 70px rgba(212, 175, 55, 0.8);
 }
 
-.hero-title-interactive.tank-mode-active .tank-mode-badge {
+.tank-mode-badge-wrap.tank-mode-active .tank-mode-badge {
   color: #ffffff;
   background: linear-gradient(90deg, #ff3333, var(--gold-primary));
   border-color: var(--gold-primary);
@@ -3036,15 +3033,12 @@ body {
 @keyframes titleGlowPulse {
   0% {
     text-shadow: 0 0 15px rgba(212, 175, 55, 0.3), 0 0 30px rgba(212, 175, 55, 0.1);
-    transform: scale(1.01);
   }
   50% {
     text-shadow: 0 0 35px rgba(212, 175, 55, 0.8), 0 0 60px rgba(212, 175, 55, 0.4);
-    transform: scale(1.03);
   }
   100% {
     text-shadow: 0 0 15px rgba(212, 175, 55, 0.3), 0 0 30px rgba(212, 175, 55, 0.1);
-    transform: scale(1.01);
   }
 }
 
@@ -7798,8 +7792,8 @@ body {
     padding: 1.5rem 0.8rem !important;
   }
   .hero-text-block .hero-title-interactive {
-    font-size: 2.1rem !important;
-    transform: scale(1.02) !important;
+    font-size: 1.85rem !important;
+    transform: none !important;
   }
   .hero-text-block .hero-subtitle {
     font-size: 0.8rem !important;

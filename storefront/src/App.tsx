@@ -949,10 +949,23 @@ const StorefrontView: React.FC<StorefrontViewProps> = ({ onViewProductDetail, on
           }}
         >
           <span className="title-gold">POWER TANK</span> <span className="title-white">NUTRITION</span>
-          <div className="tank-mode-badge-wrap">
-            <span className="tank-mode-badge">{tankMode ? '🔥 TANK MODE ACTIVE 🔥' : '⚡ CLICK TO TRIGGER TANK MODE ⚡'}</span>
-          </div>
         </h1>
+        <div 
+          className={`tank-mode-badge-wrap ${tankMode ? 'tank-mode-active' : ''}`}
+          onClick={() => {
+            const nextMode = !tankMode;
+            setTankMode(nextMode);
+            if (navigator.vibrate) navigator.vibrate(100);
+            if (nextMode) {
+              setTimeout(() => {
+                const el = document.querySelector('.stack-builder-panel');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }, 400);
+            }
+          }}
+        >
+          <span className="tank-mode-badge">{tankMode ? '🔥 TANK MODE ACTIVE 🔥' : '⚡ CLICK TO TRIGGER TANK MODE ⚡'}</span>
+        </div>
         <p className="hero-subtitle">
           Premium high-grade supplements formulated to amplify <span className="text-gold-highlight">strength</span>, <span className="text-gold-highlight">maximum energy</span>, and <span className="text-gold-highlight">athletic recovery</span>.
         </p>
