@@ -10548,5 +10548,107 @@ body {
   font-weight: 600;
 }
 
+/* ====================================================
+   Search Dropdown Autocomplete Styles (V2)
+   ==================================================== */
+.search-dropdown-v2 {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background: rgba(8, 8, 8, 0.98);
+  border: 1.5px solid var(--gold-primary);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(212, 175, 55, 0.2);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 9999;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.search-dropdown-v2::-webkit-scrollbar {
+  width: 6px;
+}
+.search-dropdown-v2::-webkit-scrollbar-track {
+  background: transparent;
+}
+.search-dropdown-v2::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 3px;
+}
+.search-dropdown-v2::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+.search-dropdown-item-v2 {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.search-dropdown-item-v2:hover {
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.search-dropdown-item-img-v2 {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000;
+}
+
+.search-dropdown-item-info-v2 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.search-dropdown-item-name-v2 {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-dropdown-item-price-v2 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.search-dropdown-item-original-price-v2 {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.search-dropdown-no-results-v2 {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
 
 

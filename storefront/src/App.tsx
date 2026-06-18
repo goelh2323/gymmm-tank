@@ -1244,6 +1244,7 @@ const LayoutWrapper: React.FC = () => {
         currentView={currentView} 
         setView={setView} 
         onOpenAuthModal={() => setIsAuthModalOpen(true)} 
+        navigate={navigate}
       />
 
       {/* Page Content */}
