@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnalyticsPanel } from './AnalyticsPanel';
 import { useStore } from '../context/StoreContext';
 import type { Product, Order, User } from '../context/StoreContext';
 import {
@@ -210,7 +211,7 @@ export const AdminPanel: React.FC = () => {
   } = useStore();
 
   // Dashboard Tabs & Orders Data States
-  const [adminTab, setAdminTab] = useState<'products' | 'orders' | 'users' | 'labels'>('products');
+  const [adminTab, setAdminTab] = useState<'products' | 'orders' | 'users' | 'labels' | 'analytics'>('products');
   const [selectedLabelPreset, setSelectedLabelPreset] = useState<string>('double-shot-pre-workout');
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -264,20 +265,20 @@ export const AdminPanel: React.FC = () => {
   const [formFlavors, setFormFlavors] = useState('');
   const [formSizes, setFormSizes] = useState('');
   const [formStock, setFormStock] = useState('10');
-  const [formImage, setFormImage] = useState('/images/pre_workout.png');
+  const [formImage, setFormImage] = useState('/images/pre_workout.webp');
   const [formIsBestSeller, setFormIsBestSeller] = useState(false);
   const [formIsNewArrival, setFormIsNewArrival] = useState(false);
   const [formIsHidden, setFormIsHidden] = useState(false);
 
   // Preset mockup list
   const presetImages = [
-    { name: 'Default Logo', path: '/images/logo.jpg' },
-    { name: 'Pre-Workout', path: '/images/pre_workout.png' },
-    { name: 'Whey Protein', path: '/images/whey_protein.png' },
-    { name: 'Creatine', path: '/images/creatine.png' },
-    { name: 'EAA + BCAA', path: '/images/eaa_bcaa.png' },
-    { name: 'Fat Burner', path: '/images/fat_burner.png' },
-    { name: 'Mass Gainer', path: '/images/mass_gainer.png' }
+    { name: 'Default Logo', path: '/images/logo.webp' },
+    { name: 'Pre-Workout', path: '/images/pre_workout.webp' },
+    { name: 'Whey Protein', path: '/images/whey_protein.webp' },
+    { name: 'Creatine', path: '/images/creatine.webp' },
+    { name: 'EAA + BCAA', path: '/images/eaa_bcaa.webp' },
+    { name: 'Fat Burner', path: '/images/fat_burner.webp' },
+    { name: 'Mass Gainer', path: '/images/mass_gainer.webp' }
   ];
 
   // ----------------------------------------------------
@@ -678,7 +679,7 @@ export const AdminPanel: React.FC = () => {
 
             <!-- Middle Panel -->
             <div class="print-panel panel-middle">
-              <img src="/images/logo.png" alt="Power Tank Nutrition" class="label-logo-img" />
+              <img src="/images/logo.webp" alt="Power Tank Nutrition" class="label-logo-img" />
               <div class="label-brand-heading">
                 <span>POWER</span> TANK
               </div>
@@ -780,7 +781,7 @@ export const AdminPanel: React.FC = () => {
     setFormFlavors('Chocolate, Vanilla, Coffee');
     setFormSizes('1 kg, 2 kg');
     setFormStock('10');
-    setFormImage('/images/whey_protein.png');
+    setFormImage('/images/whey_protein.webp');
     setFormIsBestSeller(false);
     setFormIsNewArrival(true);
     setFormIsHidden(false);
@@ -872,7 +873,7 @@ export const AdminPanel: React.FC = () => {
     return (
       <div className="login-container">
         <div className="login-title-wrapper">
-          <img src="/images/logo.jpg" alt="Power Tank Nutrition Logo" className="login-logo" />
+          <img src="/images/logo.webp" alt="Power Tank Nutrition Logo" className="login-logo" />
           <h2>Admin Access Portal</h2>
           <p className="form-help-text">Enter credentials to manage Power Tank Nutrition inventory.</p>
         </div>
@@ -1025,10 +1026,19 @@ export const AdminPanel: React.FC = () => {
         >
           🏷️ Printable Labels
         </button>
+        <button 
+          className={`admin-tab-btn ${adminTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => setAdminTab('analytics')}
+        >
+          📊 Analytics
+        </button>
       </div>
 
       {/* Main Tab Content */}
-      {adminTab === 'products' ? (
+      {adminTab === 'analytics' ? (
+        <AnalyticsPanel token={token} />
+      ) : adminTab === 'products' ? (
+
         <div className="admin-table-wrapper">
           <table className="admin-table">
             <thead>
@@ -1063,7 +1073,7 @@ export const AdminPanel: React.FC = () => {
                             alt={product.name}
                             className="admin-product-thumbnail"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/images/pre_workout.png';
+                              (e.target as HTMLImageElement).src = '/images/pre_workout.webp';
                             }}
                           />
                           <div>
@@ -1509,7 +1519,7 @@ export const AdminPanel: React.FC = () => {
 
                     {/* Middle Panel */}
                     <div className="label-visual-panel panel-middle">
-                      <img src="/images/logo.png" alt="Power Tank Nutrition" className="label-logo-img" />
+                      <img src="/images/logo.webp" alt="Power Tank Nutrition" className="label-logo-img" />
                       <div className="label-brand-heading">
                         <span className="gold-txt">POWER</span> TANK
                       </div>
@@ -1755,7 +1765,7 @@ export const AdminPanel: React.FC = () => {
                       title={img.name}
                     >
                       <img src={img.path} alt={img.name} onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/pre_workout.png';
+                        (e.target as HTMLImageElement).src = '/images/pre_workout.webp';
                       }} />
                     </div>
                   ))}

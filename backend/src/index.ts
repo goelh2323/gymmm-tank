@@ -256,7 +256,7 @@ const sendOrderConfirmationEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid #d4af37;">
-            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <img src="https://powertanknutrition.com/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
             <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
               <span style="color: #d4af37;">POWER TANK</span> NUTRITION
             </h1>
@@ -377,7 +377,7 @@ const sendShipmentEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
-            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <img src="https://powertanknutrition.com/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
             <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
               <span style="color: #d4af37;">POWER TANK</span> NUTRITION
             </h1>
@@ -460,7 +460,7 @@ const sendDeliveryEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #d4af37;">
-            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <img src="https://powertanknutrition.com/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #d4af37; border-radius: 50%; display: inline-block; background-color: #000;" />
             <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
               <span style="color: #d4af37;">POWER TANK</span> NUTRITION
             </h1>
@@ -550,7 +550,7 @@ const sendCancellationEmail = async (order: any) => {
           
           <!-- Branding Header -->
           <div style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); padding: 40px 32px; border-bottom: 2px solid #ef4444;">
-            <img src="https://powertanknutrition.vercel.app/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #ef4444; border-radius: 50%; display: inline-block; background-color: #000;" />
+            <img src="https://powertanknutrition.com/images/logo.png" alt="Power Tank Nutrition Logo" style="width: 80px; height: auto; margin-bottom: 16px; border: 2px solid #ef4444; border-radius: 50%; display: inline-block; background-color: #000;" />
             <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;">
               <span style="color: #ef4444;">POWER TANK</span> NUTRITION
             </h1>
@@ -1644,10 +1644,296 @@ app.get('/api/v1/test-email', async (req: Request, res: Response) => {
   }
 });
 
-// Start the Express Server
-app.listen(PORT, () => {
-  console.log(`========================================`);
-  console.log(`🏋️ Power Tank Nutrition Backend running on port ${PORT}`);
-  console.log(`🔗 API Base URL: http://localhost:${PORT}/api/v1`);
-  console.log(`========================================`);
+// ============================================================
+// ANALYTICS ENDPOINTS
+// All routes protected by authenticateAdmin middleware.
+// All raw queries use PostgreSQL syntax (Supabase / neon etc.)
+// ============================================================
+
+/**
+ * (a) REVENUE BY MONTH
+ *
+ * SQL Logic:
+ *   We group every Order by calendar month (truncated to the first day of
+ *   the month using DATE_TRUNC), then sum the `total` column for all orders
+ *   in that month.  Only PAID orders are counted so we don't inflate revenue
+ *   with pending/failed payments.
+ *
+ * Returns: [{ month: "2026-01", revenue: 45230, orderCount: 8 }, ...]
+ */
+app.get('/api/v1/admin/analytics/revenue-by-month', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    // DATE_TRUNC('month', ...) rounds the timestamp down to the 1st of the month.
+    // TO_CHAR(..., 'YYYY-MM') converts it to a human-readable "2026-01" string.
+    // We cast to ::float because Prisma returns Decimal types as strings for some drivers.
+    const rows = await prisma.$queryRaw<
+      Array<{ month: string; revenue: number; order_count: bigint }>
+    >`
+      SELECT
+        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') AS month,
+        SUM("total")::float                                   AS revenue,
+        COUNT(*)                                              AS order_count
+      FROM "Order"
+      WHERE "paymentStatus" = 'PAID'
+      GROUP BY DATE_TRUNC('month', "createdAt")
+      ORDER BY DATE_TRUNC('month', "createdAt") ASC
+    `;
+
+    // Convert BigInt order_count to Number for JSON serialisation
+    const data = rows.map(r => ({
+      month: r.month,
+      revenue: r.revenue,
+      orderCount: Number(r.order_count),
+    }));
+
+    res.json({ data });
+  } catch (error) {
+    console.error('Analytics revenue-by-month error:', error);
+    res.status(500).json({ error: 'Could not fetch revenue-by-month data' });
+  }
 });
+
+/**
+ * (b) TOP 5 BEST-SELLING PRODUCTS BY UNITS SOLD
+ *
+ * SQL Logic:
+ *   Join OrderItem with its parent Order so we can optionally filter by
+ *   payment status.  Group rows by product name, sum the `quantity` column,
+ *   then sort descending and take the top 5.
+ *
+ *   Note: We group by `productName` (denormalised on OrderItem) rather than
+ *   `productId` because product names are stable and this avoids a second join.
+ *
+ * Returns: [{ productName: "...", unitsSold: 38, revenue: 112620 }, ...]
+ */
+app.get('/api/v1/admin/analytics/top-products', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{ product_name: string; units_sold: bigint; revenue: number }>
+    >`
+      SELECT
+        oi."productName"               AS product_name,
+        SUM(oi."quantity")             AS units_sold,
+        SUM(oi."quantity" * oi."price")::float AS revenue
+      FROM "OrderItem" oi
+      -- Join to Order so we can filter by payment status below
+      INNER JOIN "Order" o ON o."id" = oi."orderId"
+      WHERE o."paymentStatus" = 'PAID'
+      GROUP BY oi."productName"
+      ORDER BY SUM(oi."quantity") DESC
+      LIMIT 5
+    `;
+
+    const data = rows.map(r => ({
+      productName: r.product_name,
+      unitsSold: Number(r.units_sold),
+      revenue: r.revenue,
+    }));
+
+    res.json({ data });
+  } catch (error) {
+    console.error('Analytics top-products error:', error);
+    res.status(500).json({ error: 'Could not fetch top-products data' });
+  }
+});
+
+/**
+ * (c) AVERAGE ORDER VALUE TREND OVER TIME
+ *
+ * SQL Logic:
+ *   Same DATE_TRUNC grouping as query (a), but instead of SUM we use AVG.
+ *   The Average Order Value (AOV) = total revenue / number of orders for
+ *   that month.  Postgres's AVG() does exactly that.
+ *
+ * Returns: [{ month: "2026-01", aov: 3982.50, orderCount: 8 }, ...]
+ */
+app.get('/api/v1/admin/analytics/avg-order-value', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{ month: string; aov: number; order_count: bigint }>
+    >`
+      SELECT
+        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') AS month,
+        AVG("total")::float                                   AS aov,
+        COUNT(*)                                              AS order_count
+      FROM "Order"
+      WHERE "paymentStatus" = 'PAID'
+      GROUP BY DATE_TRUNC('month', "createdAt")
+      ORDER BY DATE_TRUNC('month', "createdAt") ASC
+    `;
+
+    const data = rows.map(r => ({
+      month: r.month,
+      aov: Math.round(r.aov * 100) / 100, // round to 2dp
+      orderCount: Number(r.order_count),
+    }));
+
+    res.json({ data });
+  } catch (error) {
+    console.error('Analytics avg-order-value error:', error);
+    res.status(500).json({ error: 'Could not fetch avg-order-value data' });
+  }
+});
+
+/**
+ * (d) REVENUE BY PRODUCT CATEGORY
+ *
+ * SQL Logic:
+ *   Join OrderItem → Order → Product to get each item's category.
+ *   Group by category, sum revenue (quantity × price per OrderItem).
+ *
+ *   We join on Product.id = OrderItem.productId. If a product has been
+ *   deleted since the order was placed, those items are excluded — this is
+ *   intentional to keep category data accurate.
+ *
+ * Returns: [{ category: "Whey Protein", revenue: 184630, unitsSold: 42 }, ...]
+ */
+app.get('/api/v1/admin/analytics/revenue-by-category', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const rows = await prisma.$queryRaw<
+      Array<{ category: string; revenue: number; units_sold: bigint }>
+    >`
+      SELECT
+        p."category"                              AS category,
+        SUM(oi."quantity" * oi."price")::float    AS revenue,
+        SUM(oi."quantity")                         AS units_sold
+      FROM "OrderItem" oi
+      -- Join to Order for payment-status filter
+      INNER JOIN "Order" o   ON o."id"  = oi."orderId"
+      -- Join to Product to get category name
+      INNER JOIN "Product" p ON p."id"  = oi."productId"
+      WHERE o."paymentStatus" = 'PAID'
+      GROUP BY p."category"
+      ORDER BY SUM(oi."quantity" * oi."price") DESC
+    `;
+
+    const data = rows.map(r => ({
+      category: r.category,
+      revenue: r.revenue,
+      unitsSold: Number(r.units_sold),
+    }));
+
+    res.json({ data });
+  } catch (error) {
+    console.error('Analytics revenue-by-category error:', error);
+    res.status(500).json({ error: 'Could not fetch revenue-by-category data' });
+  }
+});
+
+/**
+ * (e) LOW-STOCK PRODUCTS
+ *
+ * SQL Logic:
+ *   Simple threshold filter on Product.stock.
+ *   The default threshold is 10 units; pass ?threshold=N to override.
+ *   Results are sorted by stock ascending (most urgent first).
+ *
+ * Returns: [{ id, name, category, stock }, ...]
+ */
+app.get('/api/v1/admin/analytics/low-stock', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    // Allow the caller to customise the alert threshold (default = 10 units)
+    const threshold = Math.max(0, parseInt((req.query.threshold as string) || '10', 10));
+
+    // Use Prisma's ORM (no raw SQL needed) — straightforward field filter.
+    // We exclude hidden products from the alert since they're not actively sold.
+    const products = await prisma.product.findMany({
+      where: {
+        stock: { lte: threshold },
+        isHidden: false,
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        stock: true,
+        price: true,
+        salePrice: true,
+        image: true,
+      },
+      orderBy: { stock: 'asc' }, // most critical (0 stock) at top
+    });
+
+    res.json({ threshold, data: products });
+  } catch (error) {
+    console.error('Analytics low-stock error:', error);
+    res.status(500).json({ error: 'Could not fetch low-stock data' });
+  }
+});
+
+/**
+ * (f) REPEAT CUSTOMER RATE
+ *
+ * SQL Logic:
+ *   A "repeat customer" is a registered user (userId IS NOT NULL) who has
+ *   placed MORE THAN ONE paid order.
+ *
+ *   Step 1 — Subquery: for each userId, count how many paid orders they have.
+ *   Step 2 — Outer query: split that into "repeat" (count > 1) vs "one-time"
+ *            and produce counts + percentage.
+ *
+ *   The rate is: repeatCustomers / totalCustomersWithAnyOrder × 100
+ *
+ * Returns: { repeatCustomers, oneTimeCustomers, totalCustomers, repeatRate }
+ */
+app.get('/api/v1/admin/analytics/repeat-customers', authenticateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    // Step 1: Count paid orders per registered user
+    // Step 2: Classify each user as repeat (>1 order) or one-time (exactly 1)
+    const rows = await prisma.$queryRaw<
+      Array<{ is_repeat: boolean; customer_count: bigint }>
+    >`
+      SELECT
+        (order_count > 1)  AS is_repeat,
+        COUNT(*)           AS customer_count
+      FROM (
+        -- Subquery: how many paid orders does each registered user have?
+        SELECT
+          "userId",
+          COUNT(*) AS order_count
+        FROM "Order"
+        WHERE "userId" IS NOT NULL        -- exclude guest checkouts
+          AND "paymentStatus" = 'PAID'
+        GROUP BY "userId"
+      ) user_order_counts
+      GROUP BY (order_count > 1)
+    `;
+
+    let repeatCustomers = 0;
+    let oneTimeCustomers = 0;
+
+    for (const r of rows) {
+      if (r.is_repeat) repeatCustomers = Number(r.customer_count);
+      else oneTimeCustomers = Number(r.customer_count);
+    }
+
+    const totalCustomers = repeatCustomers + oneTimeCustomers;
+    const repeatRate = totalCustomers > 0
+      ? Math.round((repeatCustomers / totalCustomers) * 10000) / 100 // 2dp percentage
+      : 0;
+
+    res.json({
+      data: {
+        repeatCustomers,
+        oneTimeCustomers,
+        totalCustomers,
+        repeatRate, // e.g. 42.86 means 42.86%
+      },
+    });
+  } catch (error) {
+    console.error('Analytics repeat-customers error:', error);
+    res.status(500).json({ error: 'Could not fetch repeat-customers data' });
+  }
+});
+
+// Start the Express Server
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`========================================`);
+    console.log(`🏋️ Power Tank Nutrition Backend running on port ${PORT}`);
+    console.log(`🔗 API Base URL: http://localhost:${PORT}/api/v1`);
+    console.log(`========================================`);
+  });
+}
+
+export default app;
