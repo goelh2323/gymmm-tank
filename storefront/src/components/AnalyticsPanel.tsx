@@ -333,8 +333,8 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
               tickLine={false}
             />
             <Tooltip
-              formatter={(v: number) => [formatINR(v), 'Revenue']}
-              labelFormatter={fmtMonth}
+              formatter={(v) => [formatINR(Number(v)), 'Revenue']}
+              labelFormatter={(label) => fmtMonth(String(label))}
               contentStyle={tooltipStyle}
             />
             <Legend wrapperStyle={{ color: '#888', fontSize: 12 }} />
@@ -376,8 +376,8 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
               tickLine={false}
             />
             <Tooltip
-              formatter={(v: number) => [formatINR(v), 'Avg. Order Value']}
-              labelFormatter={fmtMonth}
+              formatter={(v) => [formatINR(Number(v)), 'Avg. Order Value']}
+              labelFormatter={(label) => fmtMonth(String(label))}
               contentStyle={tooltipStyle}
             />
             <Line
@@ -434,8 +434,8 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
                 tickFormatter={v => v.length > 18 ? v.slice(0, 18) + '…' : v}
               />
               <Tooltip
-                formatter={(v: number, name: string) => [
-                  name === 'unitsSold' ? `${v} units` : formatINR(v),
+                formatter={(v, name) => [
+                  name === 'unitsSold' ? `${Number(v)} units` : formatINR(Number(v)),
                   name === 'unitsSold' ? 'Units Sold' : 'Revenue',
                 ]}
                 contentStyle={tooltipStyle}
