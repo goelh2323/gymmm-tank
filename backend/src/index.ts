@@ -1927,13 +1927,14 @@ app.get('/api/v1/admin/analytics/repeat-customers', authenticateAdmin, async (re
 });
 
 // Start the Express Server
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`========================================`);
-    console.log(`🏋️ Power Tank Nutrition Backend running on port ${PORT}`);
-    console.log(`🔗 API Base URL: http://localhost:${PORT}/api/v1`);
-    console.log(`========================================`);
-  });
-}
+// NOTE: Always listen — Render (and similar hosts) run `node dist/index.js`
+// directly and set NODE_ENV=production, so we must NOT gate listen() on env.
+// Vercel/serverless hosts don't call this (they import the app as a handler).
+app.listen(PORT, () => {
+  console.log(`========================================`);
+  console.log(`🏋️ Power Tank Nutrition Backend running on port ${PORT}`);
+  console.log(`🔗 API Base URL: http://localhost:${PORT}/api/v1`);
+  console.log(`========================================`);
+});
 
 export default app;
