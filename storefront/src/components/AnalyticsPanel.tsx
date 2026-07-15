@@ -38,6 +38,7 @@ interface LowStockProduct {
   stock: number;
   price: number;
   salePrice: number | null;
+  image: string;
 }
 
 interface RepeatCustomerStats {
@@ -467,8 +468,8 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
                 outerRadius={100}
                 innerRadius={55}
                 paddingAngle={3}
-                label={({ category, percent }) =>
-                  `${category} ${(percent * 100).toFixed(0)}%`
+                label={({ name, percent }) =>
+                  `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                 }
                 labelLine={{ stroke: '#444' }}
               >
@@ -477,7 +478,7 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(v: number) => [formatINR(v), 'Revenue']}
+                formatter={(v) => [formatINR(Number(v)), 'Revenue']}
                 contentStyle={tooltipStyle}
               />
             </PieChart>
@@ -513,7 +514,7 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
                   <Cell fill="#2a2a2a" />
                 </Pie>
                 <Tooltip
-                  formatter={(v: number, name: string) => [`${v} customers`, name]}
+                  formatter={(v, name) => [`${Number(v)} customers`, String(name)]}
                   contentStyle={tooltipStyle}
                 />
               </PieChart>
@@ -600,9 +601,8 @@ export const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ token }) => {
               </thead>
               <tbody>
                 {lowStock.map(p => {
-                  const isOut     = p.stock === 0;
+                  const isOut      = p.stock === 0;
                   const isCritical = p.stock > 0 && p.stock <= 3;
-                  const isLow     = p.stock > 3 && p.stock <= 10;
 
                   const badge = isOut
                     ? { label: 'OUT OF STOCK', color: '#ef4444', bg: 'rgba(239,68,68,0.12)' }
